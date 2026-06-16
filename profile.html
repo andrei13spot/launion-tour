@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Profile | La Union Tour</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="bg-aura"></div>
+  <div class="bg-grid"></div>
+
+  <nav>
+    <a class="brand" href="index.html"><span class="dot"></span> <span><span class="b1">LA</span> <span class="b2">UNION</span></span></a>
+    <button class="nav-toggle" aria-label="menu">&#9776;</button>
+    <div class="nav-links">
+      <a href="index.html">Tourist Spots</a>
+      <a href="hotels.html">Hotels</a>
+      <a href="index.html#intro">History</a>
+      <span id="navAuth" style="display:contents"></span>
+    </div>
+  </nav>
+
+  <div class="auth-wrap">
+    <form class="auth-card" id="profileForm" style="width:min(480px,100%)">
+      <h1>My Profile</h1>
+      <p class="sub">Update your account details below.</p>
+      <div class="auth-err" id="err"></div>
+      <div class="auth-ok" id="ok"></div>
+
+      <div class="field">
+        <label for="name">Full name</label>
+        <input type="text" id="name" required />
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" required />
+      </div>
+
+      <div style="border-top:1px solid var(--line); margin:18px 0; padding-top:16px">
+        <p class="sub" style="margin:0 0 14px">Change password <span style="color:var(--muted);font-weight:500">(leave blank to keep your current one)</span></p>
+        <div class="field">
+          <label for="password">New password</label>
+          <input type="password" id="password" placeholder="New password" />
+        </div>
+        <div class="field">
+          <label for="confirm">Confirm new password</label>
+          <input type="password" id="confirm" placeholder="Re-type new password" />
+          <div class="match-hint" id="matchHint"></div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-red btn-block">Save changes</button>
+    </form>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    const form = document.getElementById("profileForm");
+    const err = document.getElementById("err");
+    const ok = document.getElementById("ok");
+    const nameInput = document.getElementById("name");
+    const emailInput = document.getElementById("email");
+    const pwInput = document.getElementById("password");
+    const confirmInput = document.getElementById("confirm");
+    const matchHint = document.getElementById("matchHint");
+
+    function updateMatch() {
+      if (!confirmInput.value && !pwInput.value) { matchHint.textContent = ""; matchHint.className = "match-hint"; return; }
+      if (confirmInput.value === pwInput.value) {
+        matchHint.textContent = "Passwords match";
+        matchHint.className = "match-hint ok";
+      } else {
+        matchHint.textContent = "Passwords do not match yet";
+        matchHint.className = "match-hint bad";
+      }
+    }
+    pwInput.addEventListener("input", updateMatch);
+    confirmInput.addEventListener("input", updateMatch);
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      err.classList.remove("show");
+      ok.classList.remove("show");
+      if (pwInput.value && pwInput.value !== confirmInput.value) {
+        err.textContent = "The new passwords do not match.";
+        err.classList.add("show");
+        return;
+      }
+      const body = { name: nameInput.value, email: emailInput.value };
+      if (pwInput.value) { body.password = pwInput.value; body.confirm = confirmInput.value; }
+      const res = await api("api/profile.php", "POST", body);
+      if (!res.ok) {
+        err.textContent = res.data.error || "Could not save your changes.";
+        err.classList.add("show");
+        return;
+      }
+      ok.textContent = "Your profile has been updated.";
+      ok.classList.add("show");
+      pwInput.value = ""; confirmInput.value = ""; updateMatch();
+      CURRENT_USER = res.data.user;
+      renderNavUser();
+    });
+
+    window.addEventListener("load", async function () {
+      setupNavToggle();
+      await loadUser();
+      if (!CURRENT_USER) { window.location.href = "login.html"; return; }
+      renderNavUser();
+      nameInput.value = CURRENT_USER.name;
+      emailInput.value = CURRENT_USER.email;
+    });
+  </script>
+</body>
+</html>

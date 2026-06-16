@@ -1,0 +1,5 @@
+# local config with database credentials (do not commit)
+api/config.local.php
+*.log
+.DS_Store
+Thumbs.db

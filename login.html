@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Log in | La Union Tour</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="bg-aura"></div>
+  <div class="bg-grid"></div>
+
+  <nav>
+    <a class="brand" href="index.html"><span class="dot"></span> <span><span class="b1">LA</span> <span class="b2">UNION</span></span></a>
+    <div class="nav-links">
+      <a href="index.html">Tourist Spots</a>
+      <a href="hotels.html">Hotels</a>
+      <a href="index.html#intro">History</a>
+    </div>
+  </nav>
+
+  <div class="auth-wrap">
+    <form class="auth-card" id="loginForm">
+      <h1>Welcome back</h1>
+      <p class="sub">Log in to plan tours and book hotels in La Union.</p>
+      <div class="auth-err" id="err"></div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="ilovelaunion@gmail.com" required />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Password" required />
+      </div>
+      <button type="submit" class="btn btn-red btn-block">Log in</button>
+      <div class="auth-switch">Don't have an account? <a href="signup.html">Sign up</a></div>
+    </form>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    const form = document.getElementById("loginForm");
+    const err = document.getElementById("err");
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      err.classList.remove("show");
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const res = await api("api/login.php", "POST", { email: email, password: password });
+      if (!res.ok) {
+        err.textContent = res.data.error || "Could not log in.";
+        err.classList.add("show");
+        return;
+      }
+      window.location.href = "trips.html";
+    });
+  </script>
+</body>
+</html>
