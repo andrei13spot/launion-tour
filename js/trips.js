@@ -138,6 +138,10 @@ function openBookingModal(bookingId) {
   const isHotel = b.kind === "hotel";
   const item = isHotel ? HOTEL_MAP[b.item_id] : SPOT_MAP[b.item_id];
   const color = isHotel ? "var(--blue)" : (item ? (CAT_COLOR[item.category] || "var(--blue)") : "var(--blue)");
+  // Use the real photo when the spot/hotel has one, so it matches the other popups.
+  const visual = (item && item.image)
+    ? '<img src="' + item.image + '" alt="' + escapeHtml(b.item_name) + '"/>'
+    : '<div class="ph" style="background:' + color + '"></div>';
   const tips = travellerTips(b);
 
   // practical info rows differ for hotels vs tours
@@ -163,7 +167,7 @@ function openBookingModal(bookingId) {
   const knowList = tips.know.map(function (t) { return "<li>" + ICONS.info + "<span>" + escapeHtml(t) + "</span></li>"; }).join("");
 
   document.getElementById("modal").innerHTML =
-    '<div class="modal-visual"><div class="ph" style="background:' + color + '"></div>' +
+    '<div class="modal-visual">' + visual +
       '<button class="modal-close" id="mClose" aria-label="Close">&times;</button></div>' +
     '<div class="modal-inner">' +
       '<span class="modal-type">' + (isHotel ? "Hotel Reservation" : "Tour Plan") + '</span>' +

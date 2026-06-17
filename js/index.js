@@ -138,7 +138,7 @@ function openSpotModal(spotId) {
       '<div class="book-box">' +
         '<h4>Plan a tour to this spot</h4>' +
         '<div class="field-row">' +
-          '<div class="field"><label for="tourDate">Date</label><input type="date" id="tourDate" min="' + todayStr + '" /></div>' +
+          '<div class="field"><label for="tourDate">Date</label><input type="date" id="tourDate" value="' + todayStr + '" min="' + todayStr + '" /></div>' +
           '<div class="field"><label for="tourPeople">People</label><input type="number" id="tourPeople" value="2" min="1" max="20" /></div>' +
         '</div>' +
         '<button class="btn btn-red btn-block" id="planBtn">Add to my trip</button>' +
