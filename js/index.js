@@ -39,23 +39,22 @@ function cardHTML(s) {
   '</article>';
 }
 
-// Give some categories a tinted background so the sections alternate as you scroll.
-const CAT_TINT = { mountains: " tint-blue", culture: " tint-sand" };
-
 function renderCatalog() {
   const root = document.getElementById("catalog");
   let html = "";
   DATA.categories.forEach(function (cat) {
     const list = DATA.spots.filter(function (s) { return s.category === cat.id; });
-    const tint = CAT_TINT[cat.id] || "";
-    html += '<section class="cat-block' + tint + '" id="' + cat.id + '"><div class="wrap">' +
-      '<div class="cat-head"><div>' +
+    // Each category is a full-width section with its own big centered header
+    // band (a distinct background per category) so the page reads in clear,
+    // Apple-style chapters as you scroll.
+    html += '<section class="cat-block cat-' + cat.id + '" id="' + cat.id + '">' +
+      '<div class="cat-hero reveal">' +
         '<div class="l-tag">' + escapeHtml(cat.tag) + '</div>' +
         '<h3>' + escapeHtml(cat.label) + '</h3>' +
+        '<p class="cat-sub">' + list.length + ' places to explore</p>' +
       '</div>' +
-      '<div class="count">' + String(list.length).padStart(2, "0") + '</div></div>' +
-      '<div class="grid">' + list.map(cardHTML).join("") + '</div>' +
-    '</div></section>';
+      '<div class="wrap"><div class="grid">' + list.map(cardHTML).join("") + '</div></div>' +
+    '</section>';
   });
   root.innerHTML = html;
 
@@ -234,6 +233,7 @@ function showSuggestions(suggestions, title, hint) {
 
 // Fade the cards in as they scroll into view.
 function initScrollAnimations() {
+  revealOnScroll(".cat-hero");
   revealOnScroll(".cat-block .card");
 }
 

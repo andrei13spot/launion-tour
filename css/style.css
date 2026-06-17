@@ -245,16 +245,36 @@ section { position: relative; z-index: 2; }
 .suggest-chip { background: var(--bg-soft); border: 1px solid var(--line); border-radius: 20px; padding: 6px 12px; font-size: .8rem; font-weight: 600; cursor: pointer; color: var(--ink); }
 .suggest-chip:hover { border-color: var(--blue); color: var(--blue); }
 
-.cat-block { padding: clamp(46px, 9vh, 84px) 0; }
-/* alternating section backgrounds so each category feels different on scroll */
-.cat-block.tint-blue { background: #eef2fb; }
-.cat-block.tint-sand { background: #fbf5ec; }
-.cat-block.tint-blue .cat-head .count { -webkit-text-stroke-color: rgba(0,56,168,.35); }
-.cat-block.tint-sand .cat-head .count { -webkit-text-stroke-color: rgba(201,138,26,.45); }
-.cat-head { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 36px; }
-.cat-head .l-tag { font-weight: 700; letter-spacing: 4px; font-size: .7rem; color: var(--red); text-transform: uppercase; margin-bottom: 8px; }
-.cat-head h3 { font-weight: 800; color: var(--ink); font-size: clamp(2rem, 6vw, 3.2rem); line-height: 1; text-transform: uppercase; letter-spacing: -1px; }
-.cat-head .count { font-size: 3rem; font-weight: 800; color: transparent; -webkit-text-stroke: 1.5px rgba(0,56,168,.30); }
+/* Full-width "chapter" sections that read clearly as you scroll (Apple-style). */
+.cat-block { padding: 0 0 clamp(50px, 9vh, 96px); }
+.cat-hero {
+  text-align: center; padding: clamp(64px, 13vh, 150px) 22px clamp(40px, 7vh, 80px);
+  display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: clamp(30px, 5vh, 56px);
+}
+.cat-hero .l-tag { font-weight: 700; letter-spacing: 4px; font-size: .72rem; color: var(--red); text-transform: uppercase; }
+.cat-hero h3 { font-weight: 800; color: var(--ink); font-size: clamp(2.3rem, 7vw, 4.4rem); line-height: 1.02; letter-spacing: -2px; }
+.cat-hero .cat-sub { color: var(--muted); font-size: clamp(1rem, 2.5vw, 1.2rem); }
+
+/* a distinct background per category - the chapter cue */
+.cat-beaches .cat-hero {
+  background: linear-gradient(rgba(8,20,45,.42), rgba(8,20,45,.58)), url('../img/beach/urbiztondo.jpeg') center/cover no-repeat;
+  color: #fff;
+}
+.cat-beaches .cat-hero .l-tag { color: var(--gold); }
+.cat-beaches .cat-hero h3 { color: #fff; text-shadow: 0 4px 24px rgba(0,0,0,.4); }
+.cat-beaches .cat-hero .cat-sub { color: rgba(255,255,255,.88); }
+
+.cat-mountains { background: #0a1733; }
+.cat-mountains .cat-hero h3 { color: #fff; }
+.cat-mountains .cat-hero .l-tag { color: #6f9bff; }
+.cat-mountains .cat-hero .cat-sub { color: rgba(255,255,255,.72); }
+
+.cat-food { background: #f5f5f7; }
+.cat-culture { background: #fbf2e2; }
+.cat-culture .cat-hero .l-tag { color: #b9791a; }
+.cat-stay { background: #eef2fb; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 22px; }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 22px; }
 
