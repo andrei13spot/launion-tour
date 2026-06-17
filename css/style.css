@@ -420,6 +420,23 @@ section { position: relative; z-index: 2; }
 }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+/* ---------------- Confirmation dialog ---------------- */
+.confirm-back {
+  position: fixed; inset: 0; z-index: 150; background: rgba(19,32,59,.55); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.confirm-back.open { opacity: 1; pointer-events: auto; }
+.confirm-box {
+  width: min(400px, 100%); background: #fff; border-radius: 16px; padding: 26px 24px; text-align: center;
+  box-shadow: 0 24px 60px rgba(19,32,59,.3); transform: translateY(12px) scale(.98); transition: transform .2s;
+}
+.confirm-back.open .confirm-box { transform: none; }
+.confirm-box h3 { font-size: 1.2rem; font-weight: 800; color: var(--ink); margin-bottom: 8px; }
+.confirm-box p { color: var(--ink-soft); font-size: .92rem; line-height: 1.5; margin-bottom: 22px; }
+.confirm-actions { display: flex; gap: 10px; }
+.confirm-actions .btn { flex: 1; padding: 12px; }
+
 /* ---------------- Footer ---------------- */
 footer { position: relative; z-index: 2; padding: 70px 0 44px; margin-top: 40px; border-top: 1px solid var(--line); text-align: center; background: var(--bg-soft); }
 footer .f-title { font-weight: 800; font-size: clamp(1.6rem, 5vw, 2.5rem); color: var(--ink); }

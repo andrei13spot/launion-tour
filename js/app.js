@@ -128,6 +128,37 @@ function toast(message) {
   toastTimer = setTimeout(function () { el.classList.remove("show"); }, 2500);
 }
 
+// Reusable confirmation dialog so important actions aren't done by accident.
+// confirmAction({ title, message, confirmText, cancelText, danger, onConfirm })
+function confirmAction(opts) {
+  let back = document.getElementById("confirmBack");
+  if (!back) {
+    back = document.createElement("div");
+    back.id = "confirmBack";
+    back.className = "confirm-back";
+    document.body.appendChild(back);
+  }
+  const danger = opts.danger !== false; // red button by default
+  back.innerHTML =
+    '<div class="confirm-box" role="alertdialog" aria-modal="true">' +
+      '<h3>' + escapeHtml(opts.title || "Are you sure?") + '</h3>' +
+      '<p>' + escapeHtml(opts.message || "") + '</p>' +
+      '<div class="confirm-actions">' +
+        '<button class="btn btn-ghost" id="confirmNo">' + escapeHtml(opts.cancelText || "Keep it") + '</button>' +
+        '<button class="btn ' + (danger ? "btn-red" : "btn-blue") + '" id="confirmYes">' + escapeHtml(opts.confirmText || "Confirm") + '</button>' +
+      '</div>' +
+    '</div>';
+  back.classList.add("open");
+
+  function close() { back.classList.remove("open"); }
+  document.getElementById("confirmNo").addEventListener("click", close);
+  back.addEventListener("click", function (e) { if (e.target === back) close(); });
+  document.getElementById("confirmYes").addEventListener("click", function () {
+    close();
+    if (typeof opts.onConfirm === "function") opts.onConfirm();
+  });
+}
+
 // Fade-up reveal using IntersectionObserver (works no matter how the page
 // scrolls). Elements need the .reveal class; we add .in when they show.
 function revealOnScroll(selector) {
