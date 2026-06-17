@@ -83,7 +83,8 @@ function filterSpots(query) {
   const q = query.trim().toLowerCase();
   let anyVisible = false;
   document.querySelectorAll(".cat-block").forEach(function (block) {
-    if (block.id === "stay") return; // skip the hotel teaser section
+    // The hotel teaser isn't part of the spot search - hide it while searching.
+    if (block.id === "stay") { block.style.display = q ? "none" : ""; return; }
     let blockHas = false;
     block.querySelectorAll(".card").forEach(function (card) {
       const s = spotById(card.dataset.id);
@@ -93,7 +94,13 @@ function filterSpots(query) {
       if (hit) { card.classList.add("in"); blockHas = true; } // .in keeps it visible past the reveal animation
     });
     block.style.display = blockHas ? "" : "none";
-    if (blockHas) anyVisible = true;
+    // Make sure the section's header band is visible too (it may not have
+    // scrolled into view yet, which would leave it faded out).
+    if (blockHas) {
+      const hero = block.querySelector(".cat-hero");
+      if (hero) hero.classList.add("in");
+      anyVisible = true;
+    }
   });
   const noRes = document.getElementById("noResults");
   if (noRes) noRes.style.display = anyVisible ? "none" : "block";
@@ -241,7 +248,7 @@ function initScrollAnimations() {
 function renderStayTeaser(hotels) {
   const grid = document.getElementById("stayGrid");
   if (!grid) return;
-  const featured = hotels.slice(0, 4);
+  const featured = hotels.slice(0, 6);
   grid.innerHTML = featured.map(function (h) {
     return '<article class="card reveal" data-hotel="' + h.id + '" tabindex="0" role="button" aria-label="View ' + escapeHtml(h.name) + '">' +
       '<div class="card-visual"><div class="ph" style="background:var(--blue)"></div>' +
