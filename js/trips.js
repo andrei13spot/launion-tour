@@ -94,9 +94,9 @@ function renderBookings(bookings) {
       const b = BOOKINGS.find(function (x) { return x.id === id; });
       confirmAction({
         title: "Cancel this booking?",
-        message: (b ? b.item_name + " — " : "") + "you can always book it again later.",
-        confirmText: "Yes, cancel",
-        cancelText: "Keep it",
+        message: b ? b.item_name : "",
+        confirmText: "Cancel booking",
+        cancelText: "Keep booking",
         onConfirm: async function () {
           await api("api/cancel-booking.php", "POST", { bookingId: id });
           toast("Booking cancelled.");
@@ -111,9 +111,9 @@ function renderBookings(bookings) {
       const id = parseInt(btn.dataset.remove, 10);
       confirmAction({
         title: "Remove this booking?",
-        message: "This permanently removes it from your list.",
+        message: "This removes it from your list.",
         confirmText: "Remove",
-        cancelText: "Keep it",
+        cancelText: "Cancel",
         onConfirm: async function () {
           await api("api/delete-booking.php", "POST", { bookingId: id });
           toast("Booking removed.");
@@ -179,8 +179,8 @@ function openBookingModal(bookingId) {
         '<div class="tip-group tip-know"><h5>Good to know</h5><ul>' + knowList + '</ul></div>' +
       '</div>' +
       (isHotel
-        ? '<a href="index.html" class="btn btn-red btn-block" style="margin-top:22px">Find things to do nearby</a>'
-        : '<a href="hotels.html" class="btn btn-blue btn-block" style="margin-top:22px">Find a hotel nearby</a>') +
+        ? '<a href="index.html" class="btn btn-red btn-block" style="margin-top:22px">Browse tourist spots</a>'
+        : '<a href="hotels.html" class="btn btn-blue btn-block" style="margin-top:22px">Browse hotels</a>') +
     '</div>';
 
   openModal();
@@ -279,8 +279,8 @@ function openSavedModal(type, id) {
       (item.about ? '<p class="modal-about">' + escapeHtml(item.about) + '</p>' : '') +
       '<div class="modal-rows">' + rows + '</div>' +
       (isHotel
-        ? '<a href="hotels.html?hotel=' + item.id + '" class="btn btn-blue btn-block" style="margin-top:20px">Reserve this hotel</a>'
-        : '<a href="index.html?spot=' + item.id + '" class="btn btn-red btn-block" style="margin-top:20px">Plan a tour here</a>') +
+        ? '<a href="hotels.html?hotel=' + item.id + '" class="btn btn-blue btn-block" style="margin-top:20px">Reserve now</a>'
+        : '<a href="index.html?spot=' + item.id + '" class="btn btn-red btn-block" style="margin-top:20px">Book tour</a>') +
       '<button class="link-btn" id="removeSaved" style="display:block;margin:14px auto 0">Remove from saved</button>' +
     '</div>';
 
@@ -289,9 +289,9 @@ function openSavedModal(type, id) {
   document.getElementById("removeSaved").addEventListener("click", function () {
     confirmAction({
       title: "Remove from saved?",
-      message: "This removes " + item.name + " from your saved list.",
+      message: item.name,
       confirmText: "Remove",
-      cancelText: "Keep it",
+      cancelText: "Cancel",
       onConfirm: async function () {
         await api("api/saved.php", "DELETE", { itemType: type, itemId: item.id });
         toast("Removed from saved.");

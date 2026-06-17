@@ -141,7 +141,7 @@ function openSpotModal(spotId) {
           '<div class="field"><label for="tourDate">Date</label><input type="date" id="tourDate" value="' + todayStr + '" min="' + todayStr + '" /></div>' +
           '<div class="field"><label for="tourPeople">People</label><input type="number" id="tourPeople" value="2" min="1" max="20" /></div>' +
         '</div>' +
-        '<button class="btn btn-red btn-block" id="planBtn">Add to my trip</button>' +
+        '<button class="btn btn-red btn-block" id="planBtn">Book tour</button>' +
       '</div>' +
       '<div id="suggestArea"></div>' +
     '</div>';
@@ -176,11 +176,11 @@ async function planTour(spotId) {
       '<p>' + escapeHtml(s.name) + ' · ' + formatDate(date) + ' · ' + people + ' person(s)</p>' +
       '<div class="book-actions">' +
         '<a href="trips.html" class="btn btn-red">View My Trips</a>' +
-        '<button class="btn btn-ghost" id="laterBtn">Maybe later</button>' +
+        '<button class="btn btn-ghost" id="laterBtn">Close</button>' +
       '</div></div></div>';
     document.getElementById("laterBtn").addEventListener("click", closeModal);
   }
-  showSuggestions(res.data.suggestions, "You might also like", "Hotels near this spot, only if you still need a place to stay.");
+  showSuggestions(res.data.suggestions, "You might also like", "Hotels near this spot.");
 }
 
 // Builds the "nearby" list shown after planning a tour (hotels near the spot).
@@ -196,7 +196,7 @@ function showSuggestions(suggestions, title, hint) {
       '<div class="suggest-dist">' + distText(it.distanceKm) + '</div>' +
     '</div>';
   }).join("");
-  area.innerHTML = '<div class="suggest"><h4>' + title + ' <span class="optional">Optional</span></h4>' +
+  area.innerHTML = '<div class="suggest"><h4>' + title + '</h4>' +
     '<p class="hint">' + hint + '</p>' +
     '<div class="suggest-list">' + items + '</div>' +
     '<a href="hotels.html" class="btn btn-blue btn-block" style="margin-top:14px">Browse all hotels</a></div>';

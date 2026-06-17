@@ -144,7 +144,7 @@ function confirmAction(opts) {
       '<h3>' + escapeHtml(opts.title || "Are you sure?") + '</h3>' +
       '<p>' + escapeHtml(opts.message || "") + '</p>' +
       '<div class="confirm-actions">' +
-        '<button class="btn btn-ghost" id="confirmNo">' + escapeHtml(opts.cancelText || "Keep it") + '</button>' +
+        '<button class="btn btn-ghost" id="confirmNo">' + escapeHtml(opts.cancelText || "Cancel") + '</button>' +
         '<button class="btn ' + (danger ? "btn-red" : "btn-blue") + '" id="confirmYes">' + escapeHtml(opts.confirmText || "Confirm") + '</button>' +
       '</div>' +
     '</div>';

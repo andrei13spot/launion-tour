@@ -155,11 +155,11 @@ async function reserveHotel(hotelId) {
       '<p>' + res.data.nights + ' night(s) · Total ₱' + res.data.total.toLocaleString() + '</p>' +
       '<div class="book-actions">' +
         '<a href="trips.html" class="btn btn-blue">View My Trips</a>' +
-        '<button class="btn btn-ghost" id="laterBtn">Maybe later</button>' +
+        '<button class="btn btn-ghost" id="laterBtn">Close</button>' +
       '</div></div></div>';
     document.getElementById("laterBtn").addEventListener("click", closeModal);
   }
-  showSuggestions(res.data.suggestions, "You might also like", "Tourist spots near your hotel, only if you want to explore.");
+  showSuggestions(res.data.suggestions, "You might also like", "Tourist spots near your hotel.");
 }
 
 // "Nearby" tourist spots shown after a reservation.
@@ -176,7 +176,7 @@ function showSuggestions(suggestions, title, hint) {
       '<div class="suggest-dist">' + distText(it.distanceKm) + '</div>' +
     '</div>';
   }).join("");
-  area.innerHTML = '<div class="suggest"><h4>' + title + ' <span class="optional">Optional</span></h4>' +
+  area.innerHTML = '<div class="suggest"><h4>' + title + '</h4>' +
     '<p class="hint">' + hint + '</p>' +
     '<div class="suggest-list">' + items + '</div>' +
     '<a href="index.html" class="btn btn-red btn-block" style="margin-top:14px">See all tourist spots</a></div>';
