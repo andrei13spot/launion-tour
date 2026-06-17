@@ -294,8 +294,12 @@ window.addEventListener("load", async function () {
   DATA = res.data;
   renderCatalog();
 
-  const searchInput = document.getElementById("searchInput");
-  if (searchInput) searchInput.addEventListener("input", function (e) { filterSpots(e.target.value); });
+  setupSearch({
+    getItems: function () { return DATA.spots; },
+    onPick: function (id) { openSpotModal(id); },
+    onFilter: function (q) { filterSpots(q); },
+    chips: ["San Juan", "Beach", "Waterfall", "Restaurant", "San Fernando City"]
+  });
 
   // featured hotels teaser below the spots
   const hotelRes = await api("api/hotels.php");

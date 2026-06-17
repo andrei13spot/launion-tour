@@ -232,8 +232,12 @@ window.addEventListener("load", async function () {
   HOTELS = res.data.hotels;
   renderHotels();
 
-  const searchInput = document.getElementById("searchInput");
-  if (searchInput) searchInput.addEventListener("input", function (e) { filterHotels(e.target.value); });
+  setupSearch({
+    getItems: function () { return HOTELS; },
+    onPick: function (id) { openHotelModal(id); },
+    onFilter: function (q) { filterHotels(q); },
+    chips: ["San Juan", "San Fernando City", "Resort", "Hostel", "Bauang"]
+  });
 
   // If we came from a saved hotel (e.g. /hotels.html?hotel=hotel-1), open it.
   const wanted = new URLSearchParams(window.location.search).get("hotel");

@@ -225,12 +225,29 @@ section { position: relative; z-index: 2; }
 .stat .num { font-weight: 800; font-size: clamp(2.2rem, 6vw, 3.4rem); background: var(--grad-text); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .stat .lbl { color: var(--muted); letter-spacing: 2px; text-transform: uppercase; font-size: .72rem; font-weight: 600; margin-top: 4px; }
 
-/* search bar */
+/* search bar + suggestions dropdown */
 .search-sec { padding: 0 0 6px; }
-.searchbar { max-width: 620px; margin: 0 auto; display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 0 6px 0 16px; box-shadow: 0 4px 14px rgba(19,32,59,.05); }
+.search-box { position: relative; max-width: 620px; margin: 0 auto; }
+.searchbar { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 0 6px 0 16px; box-shadow: 0 4px 14px rgba(19,32,59,.05); }
 .searchbar:focus-within { border-color: var(--blue); }
 .searchbar .search-ic { color: var(--muted); flex: 0 0 auto; }
 .searchbar input { flex: 1; border: 0; outline: 0; background: transparent; font-family: inherit; font-size: 1rem; color: var(--ink); padding: 14px 6px; }
+
+.search-suggest {
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: #fff;
+  border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 30px rgba(19,32,59,.16);
+  overflow: hidden; z-index: 40; display: none; text-align: left;
+}
+.search-suggest.open { display: block; }
+.suggest-row { display: flex; align-items: center; gap: 10px; padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--line); }
+.suggest-row:last-child { border-bottom: 0; }
+.suggest-row:hover { background: var(--bg-soft); }
+.suggest-row .sr-name { font-weight: 600; font-size: .92rem; color: var(--ink); }
+.suggest-row .sr-meta { color: var(--muted); font-size: .8rem; margin-left: auto; }
+.suggest-empty { padding: 14px 16px 6px; color: var(--muted); font-size: .86rem; }
+.suggest-chips { display: flex; gap: 8px; flex-wrap: wrap; padding: 8px 16px 14px; }
+.suggest-chip { background: var(--bg-soft); border: 1px solid var(--line); border-radius: 20px; padding: 6px 12px; font-size: .8rem; font-weight: 600; cursor: pointer; color: var(--ink); }
+.suggest-chip:hover { border-color: var(--blue); color: var(--blue); }
 
 .cat-block { padding: clamp(46px, 9vh, 84px) 0; }
 /* alternating section backgrounds so each category feels different on scroll */

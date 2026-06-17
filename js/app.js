@@ -159,6 +159,63 @@ function confirmAction(opts) {
   });
 }
 
+// Search box with a live suggestions dropdown so users aren't left guessing.
+// opts: { getItems(), onPick(id), onFilter(query), chips: [..] }
+//   getItems  -> array of { id, name, town, type } to search through
+//   onPick    -> open the chosen item (e.g. its detail popup)
+//   onFilter  -> also filter the cards on the page
+//   chips     -> quick suggestions shown when nothing matches
+function setupSearch(opts) {
+  const input = document.getElementById("searchInput");
+  const drop = document.getElementById("searchSuggest");
+  if (!input || !drop) return;
+
+  function render(query) {
+    const q = query.trim().toLowerCase();
+    if (!q) { drop.classList.remove("open"); drop.innerHTML = ""; return; }
+
+    const matches = opts.getItems().filter(function (it) {
+      return (it.name + " " + it.town + " " + it.type).toLowerCase().indexOf(q) !== -1;
+    }).slice(0, 6);
+
+    if (matches.length) {
+      drop.innerHTML = matches.map(function (it) {
+        return '<div class="suggest-row" data-id="' + it.id + '">' +
+          '<span class="sr-name">' + escapeHtml(it.name) + '</span>' +
+          '<span class="sr-meta">' + escapeHtml(it.town) + '</span></div>';
+      }).join("");
+    } else {
+      drop.innerHTML = '<div class="suggest-empty">No matches for "' + escapeHtml(query.trim()) + '". Try one of these:</div>' +
+        '<div class="suggest-chips">' + opts.chips.map(function (c) {
+          return '<span class="suggest-chip" data-chip="' + escapeHtml(c) + '">' + escapeHtml(c) + '</span>';
+        }).join("") + '</div>';
+    }
+    drop.classList.add("open");
+
+    // mousedown (not click) so it fires before the input's blur closes the box
+    drop.querySelectorAll(".suggest-row").forEach(function (row) {
+      row.addEventListener("mousedown", function (e) {
+        e.preventDefault();
+        drop.classList.remove("open");
+        opts.onPick(row.dataset.id);
+      });
+    });
+    drop.querySelectorAll(".suggest-chip").forEach(function (chip) {
+      chip.addEventListener("mousedown", function (e) {
+        e.preventDefault();
+        input.value = chip.dataset.chip;
+        if (opts.onFilter) opts.onFilter(input.value);
+        render(input.value);
+        input.focus();
+      });
+    });
+  }
+
+  input.addEventListener("input", function () { if (opts.onFilter) opts.onFilter(input.value); render(input.value); });
+  input.addEventListener("focus", function () { if (input.value) render(input.value); });
+  input.addEventListener("blur", function () { setTimeout(function () { drop.classList.remove("open"); }, 150); });
+}
+
 // Fade-up reveal using IntersectionObserver (works no matter how the page
 // scrolls). Elements need the .reveal class; we add .in when they show.
 function revealOnScroll(selector) {
