@@ -89,6 +89,22 @@ nav {
 .nav-links a:hover { color: var(--ink); }
 .nav-links a:hover::after { width: 100%; }
 .nav-links a.active { color: var(--red); }
+
+/* nav hover menus (categories under Tourist Spots, types under Hotels) */
+.nav-item { position: relative; display: inline-flex; align-items: center; }
+.nav-drop {
+  position: absolute; top: 100%; left: 50%; transform: translateX(-50%); min-width: 210px;
+  background: #fff; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 12px 30px rgba(19,32,59,.16);
+  padding: 6px; margin-top: 10px; display: none; z-index: 60;
+}
+.nav-drop::before { content: ''; position: absolute; top: -12px; left: 0; right: 0; height: 12px; }
+.nav-item:hover .nav-drop, .nav-item:focus-within .nav-drop { display: block; }
+.nav-links .nav-drop a {
+  display: block; padding: 9px 12px; border-radius: 7px; font-size: .84rem; font-weight: 600;
+  color: var(--ink); text-transform: none; letter-spacing: 0;
+}
+.nav-links .nav-drop a::after { display: none; }
+.nav-links .nav-drop a:hover { background: var(--bg-soft); color: var(--blue); }
 .nav-cta { color: #fff !important; background: var(--red); padding: 9px 16px; border-radius: 7px; letter-spacing: 1px; }
 .nav-cta::after { display: none; }
 .nav-cta:hover { background: var(--red-d); color: #fff !important; }
@@ -222,7 +238,7 @@ section { position: relative; z-index: 2; }
 .stat .lbl { color: var(--muted); letter-spacing: 2px; text-transform: uppercase; font-size: .72rem; font-weight: 600; margin-top: 4px; }
 
 /* search bar + suggestions dropdown */
-.search-sec { padding: 0 0 6px; }
+.search-sec { padding: 0 0 6px; position: relative; z-index: 30; } /* keep the dropdown above the sections below */
 .search-box { position: relative; max-width: 620px; margin: 0 auto; }
 .searchbar { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 0 6px 0 16px; box-shadow: 0 4px 14px rgba(19,32,59,.05); }
 .searchbar:focus-within { border-color: var(--blue); }
@@ -481,7 +497,7 @@ section { position: relative; z-index: 2; }
 .confirm-actions .btn { flex: 1; padding: 12px; }
 
 /* ---------------- Footer ---------------- */
-footer { position: relative; z-index: 2; padding: 70px 0 44px; margin-top: 40px; border-top: 1px solid var(--line); text-align: center; background: var(--bg-soft); }
+footer { position: relative; z-index: 2; padding: 70px 0 44px; border-top: 1px solid var(--line); text-align: center; background: var(--bg-soft); }
 footer .f-title { font-weight: 800; font-size: clamp(1.6rem, 5vw, 2.5rem); color: var(--ink); }
 footer .f-title .accent { background: var(--grad-text); -webkit-background-clip: text; background-clip: text; color: transparent; }
 footer p { color: var(--ink-soft); margin-top: 14px; font-size: .9rem; line-height: 1.6; }

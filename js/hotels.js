@@ -245,8 +245,16 @@ window.addEventListener("load", async function () {
     getItems: function () { return HOTELS; },
     onPick: function (id) { openHotelModal(id); },
     onFilter: function (q) { filterHotels(q); },
-    chips: ["San Juan", "San Fernando City", "Resort", "Hostel", "Bauang"]
+    chips: ["San Juan", "San Fernando City", "Resort", "Hostel", "Bauang"],
+    popular: ["Kahuna Beach Resort & Spa", "Thunderbird Resorts Poro Point", "Flotsam & Jetsam Hostel"]
   });
+
+  // If we came from the Hotels nav menu (e.g. hotels.html?q=Resort), pre-filter.
+  const qParam = new URLSearchParams(window.location.search).get("q");
+  if (qParam) {
+    const si = document.getElementById("searchInput");
+    if (si) { si.value = qParam; filterHotels(qParam); }
+  }
 
   // If we came from a saved hotel (e.g. /hotels.html?hotel=hotel-1), open it.
   const wanted = new URLSearchParams(window.location.search).get("hotel");

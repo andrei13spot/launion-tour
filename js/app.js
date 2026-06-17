@@ -34,6 +34,7 @@ const BOAT_SHAPES =
   fav.type = "image/svg+xml";
   fav.href = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">' + BOAT_SHAPES + '</svg>');
   document.head.appendChild(fav);
+  buildNavMenus();
 })();
 
 // Shows a spot/hotel detail popup on the current page (no page reload), with a
@@ -243,29 +244,14 @@ function setupSearch(opts) {
   const drop = document.getElementById("searchSuggest");
   if (!input || !drop) return;
 
-  function render(query) {
-    const q = query.trim().toLowerCase();
-    if (!q) { drop.classList.remove("open"); drop.innerHTML = ""; return; }
+  function rowHtml(it) {
+    return '<div class="suggest-row" data-id="' + it.id + '">' +
+      '<span class="sr-name">' + escapeHtml(it.name) + '</span>' +
+      '<span class="sr-meta">' + escapeHtml(it.town) + '</span></div>';
+  }
 
-    const matches = opts.getItems().filter(function (it) {
-      return (it.name + " " + it.town + " " + it.type).toLowerCase().indexOf(q) !== -1;
-    }).slice(0, 6);
-
-    if (matches.length) {
-      drop.innerHTML = matches.map(function (it) {
-        return '<div class="suggest-row" data-id="' + it.id + '">' +
-          '<span class="sr-name">' + escapeHtml(it.name) + '</span>' +
-          '<span class="sr-meta">' + escapeHtml(it.town) + '</span></div>';
-      }).join("");
-    } else {
-      drop.innerHTML = '<div class="suggest-empty">No matches for "' + escapeHtml(query.trim()) + '". Try one of these:</div>' +
-        '<div class="suggest-chips">' + opts.chips.map(function (c) {
-          return '<span class="suggest-chip" data-chip="' + escapeHtml(c) + '">' + escapeHtml(c) + '</span>';
-        }).join("") + '</div>';
-    }
-    drop.classList.add("open");
-
-    // mousedown (not click) so it fires before the input's blur closes the box
+  // Wire up clicks (mousedown so it beats the input's blur) after rendering.
+  function bind() {
     drop.querySelectorAll(".suggest-row").forEach(function (row) {
       row.addEventListener("mousedown", function (e) {
         e.preventDefault();
@@ -284,9 +270,72 @@ function setupSearch(opts) {
     });
   }
 
+  // Shown when the box is focused but empty - a few popular picks.
+  function renderPopular() {
+    const items = opts.getItems();
+    const pop = (opts.popular || []).map(function (name) {
+      return items.find(function (it) { return it.name === name; });
+    }).filter(Boolean).slice(0, 3);
+    if (!pop.length) { drop.classList.remove("open"); return; }
+    drop.innerHTML = '<div class="suggest-empty">Popular right now</div>' + pop.map(rowHtml).join("");
+    drop.classList.add("open");
+    bind();
+  }
+
+  function render(query) {
+    const q = query.trim().toLowerCase();
+    if (!q) { renderPopular(); return; }
+
+    const matches = opts.getItems().filter(function (it) {
+      return (it.name + " " + it.town + " " + it.type).toLowerCase().indexOf(q) !== -1;
+    }).slice(0, 6);
+
+    if (matches.length) {
+      drop.innerHTML = matches.map(rowHtml).join("");
+    } else {
+      drop.innerHTML = '<div class="suggest-empty">No matches for "' + escapeHtml(query.trim()) + '". Try one of these:</div>' +
+        '<div class="suggest-chips">' + opts.chips.map(function (c) {
+          return '<span class="suggest-chip" data-chip="' + escapeHtml(c) + '">' + escapeHtml(c) + '</span>';
+        }).join("") + '</div>';
+    }
+    drop.classList.add("open");
+    bind();
+  }
+
   input.addEventListener("input", function () { if (opts.onFilter) opts.onFilter(input.value); render(input.value); });
-  input.addEventListener("focus", function () { if (input.value) render(input.value); });
+  input.addEventListener("focus", function () { render(input.value); });
   input.addEventListener("blur", function () { setTimeout(function () { drop.classList.remove("open"); }, 150); });
+}
+
+// Builds the hover menus under "Tourist Spots" (the 4 categories) and "Hotels"
+// (hotel types). Runs once per page from app.js.
+function buildNavMenus() {
+  const menus = {
+    "Tourist Spots": [
+      ["Beaches & Falls", "index.html#beaches"],
+      ["Caves & Mountains", "index.html#mountains"],
+      ["Restaurants", "index.html#food"],
+      ["Culture & Landmarks", "index.html#culture"]
+    ],
+    "Hotels": [
+      ["Beach Resorts", "hotels.html?q=Beach Resort"],
+      ["Resorts", "hotels.html?q=Resort"],
+      ["Hotels", "hotels.html?q=Hotel"],
+      ["Hostels", "hotels.html?q=Hostel"]
+    ]
+  };
+  document.querySelectorAll(".nav-links > a").forEach(function (a) {
+    const items = menus[a.textContent.trim()];
+    if (!items) return;
+    const wrap = document.createElement("div");
+    wrap.className = "nav-item";
+    a.parentNode.insertBefore(wrap, a);
+    wrap.appendChild(a);
+    const box = document.createElement("div");
+    box.className = "nav-drop";
+    box.innerHTML = items.map(function (it) { return '<a href="' + it[1] + '">' + it[0] + '</a>'; }).join("");
+    wrap.appendChild(box);
+  });
 }
 
 // Fade-up reveal using IntersectionObserver (works no matter how the page

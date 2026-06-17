@@ -303,7 +303,8 @@ window.addEventListener("load", async function () {
     getItems: function () { return DATA.spots; },
     onPick: function (id) { openSpotModal(id); },
     onFilter: function (q) { filterSpots(q); },
-    chips: ["San Juan", "Beach", "Waterfall", "Restaurant", "San Fernando City"]
+    chips: ["San Juan", "Beach", "Waterfall", "Restaurant", "San Fernando City"],
+    popular: ["Urbiztondo Beach", "Tangadan Falls", "Ma-Cho Temple"]
   });
 
   // featured hotels teaser below the spots
@@ -314,6 +315,13 @@ window.addEventListener("load", async function () {
   // If we arrived from a saved item (e.g. /?spot=spot-1), open it right away.
   const wanted = new URLSearchParams(window.location.search).get("spot");
   if (wanted && spotById(wanted)) openSpotModal(wanted);
+
+  // If linked to a category from the nav menu (e.g. index.html#beaches), scroll there
+  // once the sections exist.
+  if (window.location.hash) {
+    const target = document.querySelector(window.location.hash);
+    if (target) setTimeout(function () { target.scrollIntoView(); }, 80);
+  }
 
   setTimeout(function () { document.getElementById("loader").classList.add("hide"); }, 700);
 });
