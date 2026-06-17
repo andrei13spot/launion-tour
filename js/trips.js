@@ -194,7 +194,6 @@ function savedCard(item) {
       '<div class="card-town">' + escapeHtml(d.town) + ', La Union</div>' +
       '<div class="card-foot" style="margin-top:auto">' +
         '<span class="card-price">' + sub + '</span>' +
-        '<span class="card-more">View &rarr;</span>' +
       '</div>' +
     '</div></article>';
 }

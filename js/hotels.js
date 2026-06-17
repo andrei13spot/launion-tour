@@ -5,7 +5,8 @@ let HOTELS = [];
 let SAVED_HOTELS = {};
 
 function hotelById(id) {
-  return HOTELS.find(function (h) { return h.id === id; });
+  // ids are numbers from the database but data-id attributes are strings.
+  return HOTELS.find(function (h) { return String(h.id) === String(id); });
 }
 
 function hotelCard(h) {

@@ -6,7 +6,9 @@ let DATA = null;          // { categories, spots }
 let SAVED_SPOTS = {};     // spotId -> true (so we know which hearts are filled)
 
 function spotById(id) {
-  return DATA.spots.find(function (s) { return s.id === id; });
+  // ids from the database are numbers, but data-id attributes are strings,
+  // so compare them as strings to be safe.
+  return DATA.spots.find(function (s) { return String(s.id) === String(id); });
 }
 
 function priceFmt(price) {
@@ -32,7 +34,6 @@ function cardHTML(s) {
       '<p class="card-about">' + escapeHtml(s.about) + '</p>' +
       '<div class="card-foot">' +
         '<span class="card-price">' + priceFmt(s.price) + '</span>' +
-        '<span class="card-more">View &rarr;</span>' +
       '</div>' +
     '</div>' +
   '</article>';
