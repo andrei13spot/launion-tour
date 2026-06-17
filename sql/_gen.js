@@ -69,6 +69,44 @@ const HOTELS = [
   ["Luna Heritage Inn","Luna","Inn",1600,4.0,"Cozy small-town inn near Pebble Beach and the Baluarte Watch Tower, great base for exploring northern La Union.","Free WiFi, Breakfast, Parking"]
 ];
 
+// Photo for each spot (uploaded by the group). Keyed by the exact spot name.
+const IMAGES = {
+  "Urbiztondo Beach": "img/beach/urbiztondo.jpeg",
+  "Pebble Beach": "img/beach/pebble-beach.jpg",
+  "Immuki Island": "img/beach/immuki.jpg",
+  "Tangadan Falls": "img/beach/tangadan.jpg",
+  "Taboc Beach": "img/beach/taboc.jpg",
+  "Agoo Beach": "img/beach/agoo.jpg",
+  "Darigayos Beach": "img/beach/darigayos.jpg",
+  "Acapulco Beach": "img/beach/acapulco.jpg",
+  "Caba Beach": "img/beach/caba-beach.jpg",
+  "Bacnotan Beach": "img/beach/bacnotan.avif",
+  "Kedlap Burial Cave": "img/mountains/kudlap-burial-cave.jpeg",
+  "Mount Lusong": "img/mountains/mount-lusong.jpeg",
+  "Mount Mugong": "img/mountains/mount-mugong.jpg",
+  "Sudipen Highland Crevices": "img/mountains/sudipen-highland-crevices.jpg",
+  "Gefseis Greek Grill": "img/food/greek.jpg",
+  "Curo La Union": "img/food/curo.jpg",
+  "Nuq Dining and Villas": "img/food/nuq.jpg",
+  "Amare La Cucina": "img/food/amare.webp",
+  "Halo Halo de Iloko": "img/food/halohalo.webp",
+  "Natalna Grille": "img/food/natalna.webp",
+  "Angel and Marie's Surfer's Retreat": "img/food/angels.jpg",
+  "Coast Call Kitchen & Bar": "img/food/coast-call.png",
+  "Sun Set Bay Beach Resort & Restaurant": "img/food/sunset.jpg",
+  "R Garage": "img/culture/r-garage.jpg",
+  "Ma-Cho Temple": "img/culture/ma-cho-temple.jpg",
+  "Gapuz Grapes Farm": "img/culture/gapuz-grapes-farm.jpg",
+  "Baluarte Watch Tower": "img/culture/baluarte-watch-tower.jpg",
+  "Kamay na Bato": "img/culture/kamay-na-bato.jpg",
+  "Christ the Redeemer Statue": "img/culture/christ-the-redeemer.jpg",
+  "Basilica Minore of Our Lady of Charity": "img/culture/basilica-minore-of-our-lady-of-charity.jpg",
+  "La Union Botanical Garden": "img/culture/botanical-garden.jpg",
+  "Poro Point Lighthouse": "img/culture/poro-point-lighthouse.jpg",
+  "Pindangan Ruins": "img/culture/pindangan-ruins.jpg"
+};
+SPOTS.forEach(function (s) { if (IMAGES[s[1]]) s[10] = IMAGES[s[1]]; });
+
 const q = (s) => s === null || s === undefined ? "NULL" : "'" + String(s).replace(/'/g, "''") + "'";
 
 let out = "";
@@ -168,4 +206,13 @@ HOTELS.forEach(h => {
 });
 
 fs.writeFileSync(__dirname + "/setup.sql", out);
+
+// Also write just the image updates, to apply photos to an existing database
+// without wiping users/bookings.
+let upd = "USE launion_tour;\n";
+SPOTS.forEach(function (s) {
+  if (s[10]) upd += `UPDATE spots SET image = ${q(s[10])} WHERE name = ${q(s[1])};\n`;
+});
+fs.writeFileSync(__dirname + "/update-images.sql", upd);
+
 console.log("Wrote setup.sql (" + SPOTS.length + " spots, " + HOTELS.length + " hotels, " + TOWNS.length + " towns)");
