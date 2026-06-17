@@ -336,8 +336,9 @@ window.addEventListener("load", async function () {
     return;
   }
   renderNavUser();
-  document.getElementById("welcomeLine").textContent =
-    "Welcome back, " + CURRENT_USER.name + "! Here are your saved spots and bookings.";
+  document.getElementById("welcomeLine").innerHTML =
+    "Welcome back, <span class=\"welcome-name\">" + escapeHtml(CURRENT_USER.name) +
+    "</span>! Here are your saved spots and bookings.";
   await load();
 
   // If we came from the Saved icon in the nav, open the Saved tab.

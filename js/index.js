@@ -3,7 +3,6 @@
 // hotel suggestions afterwards).
 
 let DATA = null;          // { categories, spots }
-let SAVED_SPOTS = {};     // spotId -> true (so we know which hearts are filled)
 
 function spotById(id) {
   // ids from the database are numbers, but data-id attributes are strings,
@@ -21,12 +20,10 @@ function cardHTML(s) {
   const visual = s.image
     ? '<img src="' + s.image + '" alt="' + escapeHtml(s.name) + '" loading="lazy"/>'
     : '<div class="ph" style="' + phStyle(s.category) + '"></div>';
-  const heartClass = SAVED_SPOTS[s.id] ? "badge-fav saved" : "badge-fav";
-  const heart = ICONS.heart(!!SAVED_SPOTS[s.id]);
   return '<article class="card reveal" data-id="' + s.id + '" tabindex="0" role="button" aria-label="View ' + escapeHtml(s.name) + '">' +
     '<div class="card-visual">' + visual +
       '<span class="card-type">' + escapeHtml(s.type) + '</span>' +
-      '<button class="' + heartClass + '" data-fav="' + s.id + '" aria-label="Save ' + escapeHtml(s.name) + '">' + heart + '</button>' +
+      heartBtn("spot", s.id, s.name) +
     '</div>' +
     '<div class="card-body">' +
       '<h4>' + escapeHtml(s.name) + '</h4>' +
@@ -60,7 +57,7 @@ function renderCatalog() {
 
   root.querySelectorAll(".card").forEach(function (card) {
     card.addEventListener("click", function (e) {
-      if (e.target.dataset.fav) return; // heart handled separately
+      if (e.target.closest("[data-save-id]")) return; // heart handled separately
       openSpotModal(card.dataset.id);
     });
     // let keyboard users open the card with Enter or Space too
@@ -68,12 +65,7 @@ function renderCatalog() {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openSpotModal(card.dataset.id); }
     });
   });
-  root.querySelectorAll("[data-fav]").forEach(function (btn) {
-    btn.addEventListener("click", function (e) {
-      e.stopPropagation();
-      toggleSave(btn.dataset.fav, btn);
-    });
-  });
+  wireHearts(root);
 
   initScrollAnimations();
 }
@@ -106,27 +98,6 @@ function filterSpots(query) {
   if (noRes) noRes.style.display = anyVisible ? "none" : "block";
 }
 
-async function toggleSave(spotId, btn) {
-  if (!CURRENT_USER) {
-    toast("Please log in to save spots.");
-    setTimeout(function () { window.location.href = "login.html"; }, 900);
-    return;
-  }
-  if (SAVED_SPOTS[spotId]) {
-    await api("api/saved.php", "DELETE", { itemType: "spot", itemId: spotId });
-    delete SAVED_SPOTS[spotId];
-    if (btn) { btn.classList.remove("saved"); btn.innerHTML = ICONS.heart(false); }
-    adjustSavedCount(-1);
-    toast("Removed from saved.");
-  } else {
-    await api("api/saved.php", "POST", { itemType: "spot", itemId: spotId });
-    SAVED_SPOTS[spotId] = true;
-    if (btn) { btn.classList.add("saved"); btn.innerHTML = ICONS.heart(true); }
-    adjustSavedCount(1);
-    toast("Saved to My Trips!");
-  }
-}
-
 function detailRow(key, value, link) {
   if (!value || value === "N/A") return "";
   let v = escapeHtml(value);
@@ -146,7 +117,7 @@ function openSpotModal(spotId) {
     ? (/free/i.test(s.price) ? "Free" : "₱ " + s.price) : "Free / info on site";
 
   document.getElementById("modal").innerHTML =
-    '<div class="modal-visual">' + visual +
+    '<div class="modal-visual">' + visual + heartBtn("spot", s.id, s.name) +
       '<button class="modal-close" id="mClose" aria-label="Close">&times;</button></div>' +
     '<div class="modal-inner">' +
       '<span class="modal-type">' + escapeHtml(s.type) + '</span>' +
@@ -174,6 +145,7 @@ function openSpotModal(spotId) {
     '</div>';
 
   openModal();
+  wireHearts(document.getElementById("modal"));
   document.getElementById("mClose").addEventListener("click", closeModal);
   document.getElementById("planBtn").addEventListener("click", function () { planTour(s.id); });
 }
@@ -255,7 +227,7 @@ function renderStayTeaser(hotels) {
       : '<div class="ph" style="background:var(--blue)"></div>';
     return '<article class="card reveal" data-hotel="' + h.id + '" tabindex="0" role="button" aria-label="View ' + escapeHtml(h.name) + '">' +
       '<div class="card-visual">' + visual +
-        '<span class="card-type">' + escapeHtml(h.type) + '</span></div>' +
+        '<span class="card-type">' + escapeHtml(h.type) + '</span>' + heartBtn("hotel", h.id, h.name) + '</div>' +
       '<div class="card-body">' +
         '<h4>' + escapeHtml(h.name) + '</h4>' +
         '<div class="card-town">' + escapeHtml(h.town) + '</div>' +
@@ -268,11 +240,12 @@ function renderStayTeaser(hotels) {
   }).join("");
   grid.querySelectorAll(".card").forEach(function (card) {
     const go = function () { openItemModal("hotel", card.dataset.hotel); };
-    card.addEventListener("click", go);
+    card.addEventListener("click", function (e) { if (e.target.closest("[data-save-id]")) return; go(); });
     card.addEventListener("keydown", function (e) {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); }
     });
   });
+  wireHearts(grid);
   revealOnScroll("#stayGrid .card");
 }
 
@@ -296,13 +269,7 @@ window.addEventListener("load", async function () {
 
   await loadUser();
   renderNavUser();
-
-  if (CURRENT_USER) {
-    const saved = await api("api/saved.php");
-    (saved.data.items || []).forEach(function (it) {
-      if (it.type === "spot") SAVED_SPOTS[it.data.id] = true;
-    });
-  }
+  await loadSaved(); // shared saved state for spot + hotel hearts
 
   const res = await api("api/spots.php");
   DATA = res.data;

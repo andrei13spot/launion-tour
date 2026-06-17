@@ -317,6 +317,8 @@ section { position: relative; z-index: 2; }
 }
 .badge-fav:hover { transform: scale(1.1); }
 .badge-fav.saved { color: var(--red); }
+/* inside a detail modal the heart sits top-left, clear of the close button */
+.modal-visual .badge-fav { top: 14px; left: 14px; right: auto; width: 38px; height: 38px; }
 .card-body { padding: 18px 18px 20px; display: flex; flex-direction: column; flex: 1; }
 .card-body h4 { font-weight: 800; font-size: 1.16rem; color: var(--ink); line-height: 1.12; }
 .card-town { color: var(--blue); font-size: .72rem; letter-spacing: 1.4px; text-transform: uppercase; font-weight: 600; margin: 4px 0 10px; }
@@ -452,6 +454,7 @@ section { position: relative; z-index: 2; }
 .page-head h1 { font-size: clamp(1.9rem, 5vw, 2.6rem); font-weight: 800; letter-spacing: -.6px; color: #fff; }
 .page-head h1 .accent { background: none; color: var(--gold); -webkit-text-fill-color: var(--gold); }
 .page-head p { color: rgba(255,255,255,.8); margin-top: 8px; }
+.page-head .welcome-name { color: var(--gold); font-weight: 700; }
 .tabs { display: flex; gap: 8px; border-bottom: 1px solid var(--line); margin: 26px 0 8px; flex-wrap: wrap; }
 .tab { padding: 12px 18px; font-weight: 700; font-size: .82rem; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; }
 .tab.active { color: var(--blue); border-bottom-color: var(--red); }

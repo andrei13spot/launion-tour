@@ -2,7 +2,6 @@
 // booking, suggest tourist spots that are near the hotel.
 
 let HOTELS = [];
-let SAVED_HOTELS = {};
 
 function hotelById(id) {
   // ids are numbers from the database but data-id attributes are strings.
@@ -13,12 +12,10 @@ function hotelCard(h) {
   const visual = h.image
     ? '<img src="' + h.image + '" alt="' + escapeHtml(h.name) + '" loading="lazy"/>'
     : '<div class="ph" style="background:var(--blue)"></div>';
-  const heartClass = SAVED_HOTELS[h.id] ? "badge-fav saved" : "badge-fav";
-  const heart = ICONS.heart(!!SAVED_HOTELS[h.id]);
   return '<article class="card reveal" data-id="' + h.id + '" tabindex="0" role="button" aria-label="View ' + escapeHtml(h.name) + '">' +
     '<div class="card-visual">' + visual +
       '<span class="card-type">' + escapeHtml(h.type) + '</span>' +
-      '<button class="' + heartClass + '" data-fav="' + h.id + '" aria-label="Save ' + escapeHtml(h.name) + '">' + heart + '</button>' +
+      heartBtn("hotel", h.id, h.name) +
     '</div>' +
     '<div class="card-body">' +
       '<h4>' + escapeHtml(h.name) + '</h4>' +
@@ -38,19 +35,14 @@ function renderHotels() {
   document.getElementById("hotelCount").textContent = String(HOTELS.length).padStart(2, "0");
   grid.querySelectorAll(".card").forEach(function (card) {
     card.addEventListener("click", function (e) {
-      if (e.target.dataset.fav) return;
+      if (e.target.closest("[data-save-id]")) return;
       openHotelModal(card.dataset.id);
     });
     card.addEventListener("keydown", function (e) {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openHotelModal(card.dataset.id); }
     });
   });
-  grid.querySelectorAll("[data-fav]").forEach(function (btn) {
-    btn.addEventListener("click", function (e) {
-      e.stopPropagation();
-      toggleSaveHotel(btn.dataset.fav, btn);
-    });
-  });
+  wireHearts(grid);
   revealCards();
 }
 
@@ -73,27 +65,6 @@ function revealCards() {
   revealOnScroll("#hotelGrid .card");
 }
 
-async function toggleSaveHotel(hotelId, btn) {
-  if (!CURRENT_USER) {
-    toast("Please log in to save hotels.");
-    setTimeout(function () { window.location.href = "login.html"; }, 900);
-    return;
-  }
-  if (SAVED_HOTELS[hotelId]) {
-    await api("api/saved.php", "DELETE", { itemType: "hotel", itemId: hotelId });
-    delete SAVED_HOTELS[hotelId];
-    if (btn) { btn.classList.remove("saved"); btn.innerHTML = ICONS.heart(false); }
-    adjustSavedCount(-1);
-    toast("Removed from saved.");
-  } else {
-    await api("api/saved.php", "POST", { itemType: "hotel", itemId: hotelId });
-    SAVED_HOTELS[hotelId] = true;
-    if (btn) { btn.classList.add("saved"); btn.innerHTML = ICONS.heart(true); }
-    adjustSavedCount(1);
-    toast("Saved to My Trips!");
-  }
-}
-
 function openHotelModal(hotelId) {
   const h = hotelById(hotelId);
   if (!h) return;
@@ -107,8 +78,12 @@ function openHotelModal(hotelId) {
       'border-radius:20px;padding:5px 12px;font-size:.78rem;margin:0 6px 6px 0">' + escapeHtml(a.trim()) + '</span>';
   }).join("");
 
+  const visual = h.image
+    ? '<img src="' + h.image + '" alt="' + escapeHtml(h.name) + '"/>'
+    : '<div class="ph" style="background:var(--blue)"></div>';
+
   document.getElementById("modal").innerHTML =
-    '<div class="modal-visual"><div class="ph" style="background:var(--blue)"></div>' +
+    '<div class="modal-visual">' + visual + heartBtn("hotel", h.id, h.name) +
       '<button class="modal-close" id="mClose" aria-label="Close">&times;</button></div>' +
     '<div class="modal-inner">' +
       '<span class="modal-type">' + escapeHtml(h.type) + '</span>' +
@@ -132,6 +107,7 @@ function openHotelModal(hotelId) {
     '</div>';
 
   openModal();
+  wireHearts(document.getElementById("modal"));
   document.getElementById("mClose").addEventListener("click", closeModal);
   document.getElementById("reserveBtn").addEventListener("click", function () { reserveHotel(h.id); });
 
@@ -233,13 +209,7 @@ window.addEventListener("load", async function () {
   setupNavToggle();
   await loadUser();
   renderNavUser();
-
-  if (CURRENT_USER) {
-    const saved = await api("api/saved.php");
-    (saved.data.items || []).forEach(function (it) {
-      if (it.type === "hotel") SAVED_HOTELS[it.data.id] = true;
-    });
-  }
+  await loadSaved(); // shared saved state for the hearts
 
   const res = await api("api/hotels.php");
   HOTELS = res.data.hotels;

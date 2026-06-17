@@ -95,7 +95,8 @@ function openItemModal(type, id) {
   }
 
   document.getElementById("modal").innerHTML =
-    '<div class="modal-visual">' + visual + '<button class="modal-close" id="mClose" aria-label="Close">&times;</button></div>' +
+    '<div class="modal-visual">' + visual + heartBtn(type, item.id, item.name) +
+      '<button class="modal-close" id="mClose" aria-label="Close">&times;</button></div>' +
     '<div class="modal-inner">' +
       '<span class="modal-type">' + escapeHtml(item.type) + '</span>' +
       '<h3>' + escapeHtml(item.name) + '</h3>' +
@@ -107,6 +108,7 @@ function openItemModal(type, id) {
   const back = document.getElementById("modalBack");
   back.classList.add("open");
   document.body.style.overflow = "hidden";
+  wireHearts(document.getElementById("modal"));
   document.getElementById("mClose").addEventListener("click", function () {
     back.classList.remove("open");
     document.body.style.overflow = "";
@@ -261,6 +263,57 @@ async function refreshSavedCount() {
 function adjustSavedCount(delta) {
   SAVED_COUNT = Math.max(0, SAVED_COUNT + delta);
   renderSavedBadge();
+}
+
+// ---- Shared "save" (heart) system for spots and hotels ----
+// One source of truth so card hearts and modal hearts stay in sync.
+const SAVED = {}; // key "type:id" -> true
+function savedKey(type, id) { return type + ":" + id; }
+function isSaved(type, id) { return !!SAVED[savedKey(type, id)]; }
+
+// Load the user's saved items into SAVED (call on page boot).
+async function loadSaved() {
+  if (!CURRENT_USER) return;
+  const res = await api("api/saved.php");
+  (res.data.items || []).forEach(function (it) { SAVED[savedKey(it.type, it.data.id)] = true; });
+}
+
+// Toggle a save. Returns the new state (true/false), or null if not logged in.
+async function toggleSaved(type, id) {
+  if (!CURRENT_USER) { requireLoginRedirect(); return null; }
+  const key = savedKey(type, id);
+  if (SAVED[key]) {
+    await api("api/saved.php", "DELETE", { itemType: type, itemId: id });
+    delete SAVED[key]; adjustSavedCount(-1); toast("Removed from saved.");
+    return false;
+  }
+  await api("api/saved.php", "POST", { itemType: type, itemId: id });
+  SAVED[key] = true; adjustSavedCount(1); toast("Saved to My Trips!");
+  return true;
+}
+
+// Markup for a heart button (used on cards and inside modals).
+function heartBtn(type, id, name) {
+  const on = isSaved(type, id);
+  return '<button class="badge-fav' + (on ? " saved" : "") + '" data-save-type="' + type +
+    '" data-save-id="' + id + '" aria-label="Save ' + escapeHtml(name) + '">' + ICONS.heart(on) + '</button>';
+}
+
+// Wire every heart button inside a container so it toggles + updates itself.
+function wireHearts(container) {
+  (container || document).querySelectorAll("[data-save-id]").forEach(function (btn) {
+    if (btn.dataset.wired) return;
+    btn.dataset.wired = "1";
+    btn.addEventListener("click", async function (e) {
+      e.stopPropagation();
+      e.preventDefault();
+      const on = await toggleSaved(btn.dataset.saveType, btn.dataset.saveId);
+      if (on === null) return;
+      // update every heart on the page for this item (card + modal)
+      document.querySelectorAll('[data-save-type="' + btn.dataset.saveType + '"][data-save-id="' + btn.dataset.saveId + '"]')
+        .forEach(function (b) { b.classList.toggle("saved", on); b.innerHTML = ICONS.heart(on); });
+    });
+  });
 }
 
 // Mobile nav toggle (the hamburger button).
