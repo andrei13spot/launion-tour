@@ -1,4 +1,4 @@
-// Hotels page logic: list the hotels, open a reservation modal, and after
+// hotels page logic: list the hotels, open a reservation modal, and after
 // booking, suggest tourist spots that are near the hotel.
 
 let HOTELS = [];
@@ -46,7 +46,7 @@ function renderHotels() {
   revealCards();
 }
 
-// Real-time search over the hotel cards.
+// real-time search over the hotel cards.
 function filterHotels(query) {
   const q = query.trim().toLowerCase();
   let anyVisible = false;
@@ -114,7 +114,7 @@ function openHotelModal(hotelId) {
   const checkin = document.getElementById("checkin");
   const checkout = document.getElementById("checkout");
   const totalEl = document.getElementById("hTotal");
-  // Show the running total so the user sees the price before confirming.
+  // show the running total so the user sees the price before confirming.
   function refreshTotal() {
     const n = Math.round((new Date(checkout.value) - new Date(checkin.value)) / 86400000);
     totalEl.textContent = n >= 1 ? "₱" + (n * h.price).toLocaleString() + " · " + n + " night" + (n > 1 ? "s" : "") : "Pick valid dates";
@@ -166,15 +166,18 @@ async function reserveHotel(hotelId) {
   showSuggestions(res.data.suggestions, "You might also like", "Tourist spots near your hotel.");
 }
 
-// Clickable "nearby" tourist spots shown after a reservation.
+// clickable "nearby" tourist spots shown after a reservation.
 function showSuggestions(suggestions, title, hint) {
   const area = document.getElementById("suggestArea");
   if (!area || !suggestions || !suggestions.items.length) return;
   const items = suggestions.items.map(function (it) {
     const color = CAT_COLOR[it.category] || "var(--blue)";
     const meta = (it.town || "") + " · " + (it.type || "");
+    const thumb = it.image
+      ? '<img class="suggest-thumb" src="' + it.image + '" alt="' + escapeHtml(it.name) + '" loading="lazy"/>'
+      : '<div class="suggest-thumb" style="background:' + color + '"></div>';
     return '<div class="suggest-item" data-sid="' + it.id + '" role="button" tabindex="0">' +
-      '<div class="suggest-thumb" style="background:' + color + '"></div>' +
+      thumb +
       '<div class="suggest-meta"><div class="n">' + escapeHtml(it.name) + '</div>' +
         '<div class="d">' + escapeHtml(meta) + '</div></div>' +
       '<div class="suggest-dist">' + distText(it.distanceKm) + '</div>' +
@@ -184,7 +187,7 @@ function showSuggestions(suggestions, title, hint) {
     '<p class="hint">' + hint + '</p>' +
     '<div class="suggest-list">' + items + '</div>' +
     '<a href="index.html" class="btn btn-red btn-block" style="margin-top:14px">See all tourist spots</a></div>';
-  // Open the spot's details in place instead of navigating away.
+  // open the spot's details in place instead of navigating away.
   area.querySelectorAll(".suggest-item").forEach(function (el) {
     el.addEventListener("click", function () { openItemModal("spot", el.dataset.sid); });
   });
@@ -216,7 +219,7 @@ window.addEventListener("load", async function () {
   HOTELS.forEach(function (h) { HOTELS_BY_ID[h.id] = h; });
   renderHotels();
 
-  // Load spots too so spot suggestions can open in place (no navigation).
+  // load spots too so spot suggestions can open in place (no navigation).
   const spotRes = await api("api/spots.php");
   (spotRes.data.spots || []).forEach(function (s) { SPOTS_BY_ID[s.id] = s; });
 
@@ -228,14 +231,14 @@ window.addEventListener("load", async function () {
     popular: ["Awesome Hotel", "Puerto de San Juan Beach Resort", "The Salt Boutique Hotel by Wyns"]
   });
 
-  // If we came from the Hotels nav menu (e.g. hotels.html?q=Resort), pre-filter.
+  // if we came from the Hotels nav menu (e.g. hotels.html?q=Resort), pre-filter.
   const qParam = new URLSearchParams(window.location.search).get("q");
   if (qParam) {
     const si = document.getElementById("searchInput");
     if (si) { si.value = qParam; filterHotels(qParam); }
   }
 
-  // If we came from a saved hotel (e.g. /hotels.html?hotel=hotel-1), open it.
+  // if we came from a saved hotel (e.g. /hotels.html?hotel=hotel-1), open it.
   const wanted = new URLSearchParams(window.location.search).get("hotel");
   if (wanted && hotelById(wanted)) openHotelModal(wanted);
 

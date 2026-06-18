@@ -19,7 +19,7 @@ if ($confirm !== null && $confirm !== $password) {
     json_out(["error" => "The passwords do not match."], 400);
 }
 
-// Is the email already taken?
+// is the email already taken?
 $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
 $stmt->execute([$email]);
 if ($stmt->fetch()) {

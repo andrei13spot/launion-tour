@@ -1,7 +1,7 @@
 <?php
 require __DIR__ . "/db.php";
 
-// Category labels/tags shown on the page.
+// category labels/tags shown on the page.
 $catMeta = [
     "beaches"   => ["label" => "Beaches & Falls",     "tag" => "SAND // SURF // CASCADES"],
     "mountains" => ["label" => "Caves & Mountains",   "tag" => "HIGHLANDS // CAVERNS // TRAILS"],
@@ -38,7 +38,7 @@ foreach ($rows as $r) {
     ];
 }
 
-// Build the category list in the fixed order.
+// build the category list in the fixed order.
 $categories = [];
 foreach ($order as $cid) {
     $categories[] = [

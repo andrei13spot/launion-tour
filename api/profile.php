@@ -12,7 +12,7 @@ if ($name === "" || $email === "") {
     json_out(["error" => "Please enter your name and email."], 400);
 }
 
-// Make sure the email isn't used by a different account.
+// make sure the email isn't used by a different account.
 $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ? AND id <> ?");
 $stmt->execute([$email, $userId]);
 if ($stmt->fetch()) {
@@ -21,7 +21,7 @@ if ($stmt->fetch()) {
 
 $pdo->prepare("UPDATE users SET name = ?, email = ? WHERE id = ?")->execute([$name, $email, $userId]);
 
-// Optional password change.
+// optional password change.
 if ($password !== "") {
     $missing = password_problems($password);
     if (count($missing) > 0) {

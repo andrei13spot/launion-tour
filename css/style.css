@@ -265,6 +265,11 @@ section { position: relative; z-index: 2; }
 
 /* Full-width "chapter" sections that read clearly as you scroll (Apple-style). */
 .cat-block { padding: 0 0 clamp(50px, 9vh, 96px); }
+/* inline header for the hotels list (title on the left, count on the right). */
+.cat-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 6px 0 14px; }
+.cat-head .l-tag { font-weight: 700; letter-spacing: 4px; font-size: .72rem; color: var(--blue); text-transform: uppercase; }
+.cat-head h3 { font-weight: 800; font-size: clamp(1.8rem, 4vw, 2.6rem); letter-spacing: -1px; color: var(--ink); margin-top: 2px; }
+.cat-head .count { font-weight: 800; font-size: clamp(2.2rem, 7vw, 3.4rem); line-height: 1; letter-spacing: -2px; color: var(--ink); opacity: .12; }
 .cat-hero {
   text-align: center; padding: clamp(64px, 13vh, 150px) 22px clamp(40px, 7vh, 80px);
   display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: clamp(30px, 5vh, 56px);
@@ -387,7 +392,7 @@ section { position: relative; z-index: 2; }
 .suggest-list { display: grid; gap: 10px; }
 .suggest-item { display: flex; align-items: center; gap: 12px; padding: 10px; border: 1px solid var(--line); border-radius: 12px; transition: border-color .2s; cursor: pointer; }
 .suggest-item:hover { border-color: var(--blue); }
-.suggest-thumb { width: 54px; height: 54px; border-radius: 10px; flex: 0 0 auto; }
+.suggest-thumb { width: 54px; height: 54px; border-radius: 10px; flex: 0 0 auto; object-fit: cover; display: block; }
 .suggest-meta { flex: 1; min-width: 0; }
 .suggest-meta .n { font-weight: 700; font-size: .92rem; }
 .suggest-meta .d { color: var(--muted); font-size: .78rem; margin-top: 2px; }
@@ -467,6 +472,7 @@ section { position: relative; z-index: 2; }
 .booking-icon { width: 50px; height: 50px; border-radius: 12px; display: grid; place-items: center; font-size: 1.4rem; color: #fff; flex: 0 0 auto; }
 .booking-icon.hotel { background: var(--blue); }
 .booking-icon.tour { background: var(--red); }
+.booking-thumb { width: 50px; height: 50px; border-radius: 12px; object-fit: cover; display: block; flex: 0 0 auto; }
 .booking-info { flex: 1; min-width: 180px; }
 .booking-info .t { font-weight: 800; font-size: 1.04rem; color: var(--ink); }
 .booking-info .m { color: var(--muted); font-size: .84rem; margin-top: 3px; }

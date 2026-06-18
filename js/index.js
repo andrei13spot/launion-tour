@@ -1,4 +1,4 @@
-// Home page logic: render the category blocks of tourist spots, open a
+// home page logic: render the category blocks of tourist spots, open a
 // detail modal, save spots, and let the user plan a tour (with nearby
 // hotel suggestions afterwards).
 
@@ -41,9 +41,9 @@ function renderCatalog() {
   let html = "";
   DATA.categories.forEach(function (cat) {
     const list = DATA.spots.filter(function (s) { return s.category === cat.id; });
-    // Each category is a full-width section with its own big centered header
+    // each category is a full-width section with its own big centered header
     // band (a distinct background per category) so the page reads in clear,
-    // Apple-style chapters as you scroll.
+    // apple-style chapters as you scroll.
     html += '<section class="cat-block cat-' + cat.id + '" id="' + cat.id + '">' +
       '<div class="cat-hero">' +
         '<div class="l-tag">' + escapeHtml(cat.tag) + '</div>' +
@@ -70,12 +70,12 @@ function renderCatalog() {
   initScrollAnimations();
 }
 
-// Real-time search: hide cards that don't match, and hide empty categories.
+// real-time search: hide cards that don't match, and hide empty categories.
 function filterSpots(query) {
   const q = query.trim().toLowerCase();
   let anyVisible = false;
   document.querySelectorAll(".cat-block").forEach(function (block) {
-    // The hotel teaser isn't part of the spot search - hide it while searching.
+    // the hotel teaser isn't part of the spot search - hide it while searching.
     if (block.id === "stay") { block.style.display = q ? "none" : ""; return; }
     let blockHas = false;
     block.querySelectorAll(".card").forEach(function (card) {
@@ -86,7 +86,7 @@ function filterSpots(query) {
       if (hit) { card.classList.add("in"); blockHas = true; } // .in keeps it visible past the reveal animation
     });
     block.style.display = blockHas ? "" : "none";
-    // Make sure the section's header band is visible too (it may not have
+    // make sure the section's header band is visible too (it may not have
     // scrolled into view yet, which would leave it faded out).
     if (blockHas) {
       const hero = block.querySelector(".cat-hero");
@@ -164,7 +164,7 @@ async function planTour(spotId) {
   if (!res.ok) { toast(res.data.error || "Something went wrong."); return; }
 
   toast("Tour booked!");
-  // Swap the form for a confirmation so the user can go straight to their
+  // swap the form for a confirmation so the user can go straight to their
   // trip or simply close - they are never forced to look at the suggestions.
   const s = spotById(spotId);
   const ref = "ELYU-" + String(res.data.bookingId || 0).padStart(6, "0");
@@ -186,14 +186,17 @@ async function planTour(spotId) {
   showSuggestions(res.data.suggestions, "You might also like", "Hotels near this spot.");
 }
 
-// Builds the clickable "nearby" list shown after planning a tour (hotels near the spot).
+// builds the clickable "nearby" list shown after planning a tour (hotels near the spot).
 function showSuggestions(suggestions, title, hint) {
   const area = document.getElementById("suggestArea");
   if (!area || !suggestions || !suggestions.items.length) return;
   const items = suggestions.items.map(function (it) {
     const meta = it.town + " · ₱" + it.price + "/night";
+    const thumb = it.image
+      ? '<img class="suggest-thumb" src="' + it.image + '" alt="' + escapeHtml(it.name) + '" loading="lazy"/>'
+      : '<div class="suggest-thumb" style="background:var(--blue)"></div>';
     return '<div class="suggest-item" data-sid="' + it.id + '" role="button" tabindex="0">' +
-      '<div class="suggest-thumb" style="background:var(--blue)"></div>' +
+      thumb +
       '<div class="suggest-meta"><div class="n">' + escapeHtml(it.name) + '</div>' +
         '<div class="d">' + escapeHtml(meta) + '</div></div>' +
       '<div class="suggest-dist">' + distText(it.distanceKm) + '</div>' +
@@ -203,19 +206,19 @@ function showSuggestions(suggestions, title, hint) {
     '<p class="hint">' + hint + '</p>' +
     '<div class="suggest-list">' + items + '</div>' +
     '<a href="hotels.html" class="btn btn-blue btn-block" style="margin-top:14px">Browse all hotels</a></div>';
-  // Open the hotel's details in place instead of navigating away.
+  // open the hotel's details in place instead of navigating away.
   area.querySelectorAll(".suggest-item").forEach(function (el) {
     el.addEventListener("click", function () { openItemModal("hotel", el.dataset.sid); });
   });
   area.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
-// Fade the cards in as they scroll into view.
+// fade the cards in as they scroll into view.
 function initScrollAnimations() {
   revealOnScroll(".cat-block .card");
 }
 
-// "Where to stay" teaser - a few featured hotels. Clicking one opens it in
+// "where to stay" teaser - a few featured hotels. Clicking one opens it in
 // place (view + book); only the "See all hotels" button leaves the page.
 function renderStayTeaser(hotels) {
   const grid = document.getElementById("stayGrid");
@@ -289,11 +292,11 @@ window.addEventListener("load", async function () {
   (hotelRes.data.hotels || []).forEach(function (h) { HOTELS_BY_ID[h.id] = h; }); // so hotel suggestions open in-place
   renderStayTeaser(hotelRes.data.hotels || []);
 
-  // If we arrived from a saved item (e.g. /?spot=spot-1), open it right away.
+  // if we arrived from a saved item (e.g. /?spot=spot-1), open it right away.
   const wanted = new URLSearchParams(window.location.search).get("spot");
   if (wanted && spotById(wanted)) openSpotModal(wanted);
 
-  // If linked to a category from the nav menu (e.g. index.html#beaches), scroll there
+  // if linked to a category from the nav menu (e.g. index.html#beaches), scroll there
   // once the sections exist.
   if (window.location.hash) {
     const target = document.querySelector(window.location.hash);
