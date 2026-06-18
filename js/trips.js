@@ -1,10 +1,10 @@
-// Logic for the My Trips dashboard (bookings + saved items).
+// logic for the My Trips dashboard (bookings + saved items).
 
 let BOOKINGS = [];           // the user's bookings, kept so we can open details
 let SPOT_MAP = {};           // spotId  -> spot object
 let HOTEL_MAP = {};          // hotelId -> hotel object
 
-// Returns the "what to bring" and "good to know" tips for a booking, based
+// returns the "what to bring" and "good to know" tips for a booking, based
 // on whether it's a hotel or what kind of tourist spot it is.
 function travellerTips(booking) {
   if (booking.kind === "hotel") {
@@ -40,13 +40,18 @@ function travellerTips(booking) {
   };
 }
 
-// Small inline icons (no emojis) for the booking type.
+// small inline icons (no emojis) for the booking type.
 const ICON_HOTEL = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18V9a1 1 0 0 1 1-1h11a4 4 0 0 1 4 4v6"/><path d="M3 14h18"/><path d="M3 18v2M21 18v2"/></svg>';
 const ICON_TOUR = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-5.5-6-10a6 6 0 0 1 12 0c0 4.5-6 10-6 10z"/><circle cx="12" cy="11" r="2"/></svg>';
 
 function bookingRow(b) {
   const isHotel = b.kind === "hotel";
   const icon = isHotel ? ICON_HOTEL : ICON_TOUR;
+  // show the real photo when we have it, falling back to the type icon.
+  const item = isHotel ? HOTEL_MAP[b.item_id] : SPOT_MAP[b.item_id];
+  const visual = (item && item.image)
+    ? '<img class="booking-thumb" src="' + item.image + '" alt="' + escapeHtml(b.item_name) + '" loading="lazy"/>'
+    : '<div class="booking-icon ' + (isHotel ? "hotel" : "tour") + '">' + icon + '</div>';
   let meta, side;
   if (isHotel) {
     meta = b.town + " · " + formatDate(b.checkin) + " → " + formatDate(b.checkout) + " · " + (b.guests || 1) + " guest(s)";
@@ -61,7 +66,7 @@ function bookingRow(b) {
     : '<button class="link-btn" data-cancel="' + b.id + '">Cancel</button>';
 
   return '<div class="booking-card" data-open="' + b.id + '" style="cursor:pointer">' +
-    '<div class="booking-icon ' + (isHotel ? "hotel" : "tour") + '">' + icon + '</div>' +
+    visual +
     '<div class="booking-info">' +
       '<div class="t">' + escapeHtml(b.item_name) + '</div>' +
       '<div class="m">' + escapeHtml(meta) + '</div>' +
@@ -124,7 +129,7 @@ function renderBookings(bookings) {
   });
 }
 
-// Detail row used inside the booking modal.
+// detail row used inside the booking modal.
 function bRow(key, value, link) {
   if (!value || value === "N/A") return "";
   let v = escapeHtml(value);
@@ -138,7 +143,7 @@ function openBookingModal(bookingId) {
   const isHotel = b.kind === "hotel";
   const item = isHotel ? HOTEL_MAP[b.item_id] : SPOT_MAP[b.item_id];
   const color = isHotel ? "var(--blue)" : (item ? (CAT_COLOR[item.category] || "var(--blue)") : "var(--blue)");
-  // Use the real photo when the spot/hotel has one, so it matches the other popups.
+  // use the real photo when the spot/hotel has one, so it matches the other popups.
   const visual = (item && item.image)
     ? '<img src="' + item.image + '" alt="' + escapeHtml(b.item_name) + '"/>'
     : '<div class="ph" style="background:' + color + '"></div>';
@@ -231,7 +236,7 @@ function renderSaved(items) {
     return;
   }
   panel.innerHTML = '<div class="grid">' + items.map(savedCard).join("") + '</div>';
-  // Open the item's details right here instead of navigating away.
+  // open the item's details right here instead of navigating away.
   panel.querySelectorAll("[data-saved-id]").forEach(function (card) {
     card.addEventListener("click", function () {
       openSavedModal(card.dataset.savedType, card.dataset.savedId);
@@ -242,7 +247,7 @@ function renderSaved(items) {
   });
 }
 
-// Shows a saved spot/hotel's full details in a modal, with a way to book it
+// shows a saved spot/hotel's full details in a modal, with a way to book it
 // or remove it from the saved list.
 function openSavedModal(type, id) {
   const isHotel = type === "hotel";
@@ -313,7 +318,7 @@ document.querySelectorAll(".tab").forEach(function (tab) {
 });
 
 async function load() {
-  // Load the spot/hotel catalogs once so we can show full details + tips.
+  // load the spot/hotel catalogs once so we can show full details + tips.
   if (!Object.keys(SPOT_MAP).length) {
     const spots = await api("api/spots.php");
     (spots.data.spots || []).forEach(function (s) { SPOT_MAP[s.id] = s; });
@@ -330,7 +335,7 @@ async function load() {
 window.addEventListener("load", async function () {
   setupNavToggle();
   await loadUser();
-  // This page needs a login - send guests to the login page.
+  // this page needs a login - send guests to the login page.
   if (!CURRENT_USER) {
     window.location.href = "login.html";
     return;
@@ -341,7 +346,7 @@ window.addEventListener("load", async function () {
     "</span>! Here are your saved spots and bookings.";
   await load();
 
-  // If we came from the Saved icon in the nav, open the Saved tab.
+  // if we came from the Saved icon in the nav, open the Saved tab.
   if (new URLSearchParams(window.location.search).get("tab") === "saved") {
     const savedTab = Array.from(document.querySelectorAll(".tab")).find(function (t) { return t.dataset.tab === "saved"; });
     if (savedTab) savedTab.click();
