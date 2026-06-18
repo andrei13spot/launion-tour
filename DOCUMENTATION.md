@@ -9,8 +9,15 @@
 ## 1. Title Page
 
 **Project Title:** ELYUNA — Online Tour Guide and Booking Portal
-**Members:** (group members)
-**Instructor:** (instructor)
+
+**Members:**
+- John Andrei Nañola
+- Princess Padauan
+- Dave Christian Lim
+- Luis Miguel Dela Cruz
+- Regine Villamor
+
+**Instructor:** Sir Bato
 **School Year / Term:** A.Y. 2025–2026, 2nd Semester
 
 ---
@@ -43,6 +50,7 @@ related activities and stays.
 
 **Scope**
 - Browsing of 33 tourist spots in 4 categories (beaches & falls, caves & mountains, restaurants, culture & landmarks).
+- 10 real La Union hotels across San Juan, Bauang, San Fernando City, and Sudipen.
 - User registration, login, logout, and profile editing.
 - Saving spots/hotels to a personal list.
 - Planning tours and reserving hotels, with cancel/remove.
@@ -223,7 +231,7 @@ erDiagram
 | id | INT, PK | hotel id |
 | name | VARCHAR(160) | hotel name |
 | town_id | INT, FK → towns.id | location |
-| type | VARCHAR(60) | e.g. Resort, Hostel, Inn |
+| type | VARCHAR(60) | e.g. Beach Resort, Hotel, Inn |
 | price | INT | nightly rate (placeholder) |
 | rating | DECIMAL(2,1) | star rating |
 | about | TEXT | description |
@@ -302,10 +310,15 @@ the InnoDB engine to enforce foreign keys. The full schema and seed data are in
 | 11 | Delete | Remove a cancelled booking | Booking removed | Pass |
 | 12 | Auth guard | Open My Trips logged out | Redirected to login | Pass |
 | 13 | Responsive | Resize to mobile width | Menu collapses, grid reflows | Pass |
+| 14 | Nearby suggestions | Book a hotel in each town | Closest spots match the hotel's region (e.g. Bauang hotels → Gapuz Grapes Farm; Sudipen → Sudipen Highland Crevices) | Pass |
+| 15 | Double-booking guard | Reserve the same hotel on overlapping dates (or the same tour twice on one date) | Second attempt rejected with a clear message | Pass |
 
 > The PHP layer (page serving, routing, PDO connection handling, static assets,
 > and graceful error when the database is missing) was verified with the PHP
 > built-in server. CRUD flows were tested after importing `sql/setup.sql`.
+> The nearby-suggestion results were cross-checked against the hotel source
+> sheet by querying `api/suggestions.php` for every hotel and confirming the
+> ranked spots fall in the correct town/region.
 
 ---
 
@@ -317,6 +330,8 @@ and a normalized MySQL database, and demonstrates full CRUD, session-based
 authentication, and both client- and server-side validation. Building it taught
 us how to connect the front end to a relational database through PHP, validate
 input on both sides, and keep a consistent, user-friendly interface.
+Future enhancements would include online payment, real-time room availability,
+email confirmations, and an admin dashboard for managing listings.
 
 ---
 
