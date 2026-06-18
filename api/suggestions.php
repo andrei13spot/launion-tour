@@ -1,7 +1,7 @@
 <?php
 require __DIR__ . "/db.php";
 
-// Cross-selling: nearby spots for a hotel, or nearby hotels for a spot.
+// cross-selling: nearby spots for a hotel, or nearby hotels for a spot.
 $type = $_GET["type"] ?? "";
 $id = (int)($_GET["id"] ?? 0);
 

@@ -1,6 +1,6 @@
-// Shared helpers used by every page (API calls, login state, nav, toast, etc).
+// shared helpers used by every page (API calls, login state, nav, toast, etc).
 
-// Wrapper around fetch so we don't repeat the headers everywhere.
+// wrapper around fetch so we don't repeat the headers everywhere.
 async function api(url, method, body) {
   const options = { method: method || "GET", headers: { "Content-Type": "application/json" } };
   if (body) options.body = JSON.stringify(body);
@@ -10,10 +10,10 @@ async function api(url, method, body) {
   return { ok: res.ok, status: res.status, data: data };
 }
 
-// Keep the logged-in user here once we fetch it.
+// keep the logged-in user here once we fetch it.
 let CURRENT_USER = null;
 
-// If nobody is logged in, send them to the login page. Returns true if logged in.
+// if nobody is logged in, send them to the login page. Returns true if logged in.
 function requireLoginRedirect() {
   if (CURRENT_USER) return true;
   toast("Please log in first.");
@@ -21,18 +21,18 @@ function requireLoginRedirect() {
   return false;
 }
 
-// Catalog lookups so any page can show a spot/hotel detail without navigating.
+// catalog lookups so any page can show a spot/hotel detail without navigating.
 const SPOTS_BY_ID = {};
 const HOTELS_BY_ID = {};
 
-// The little sailboat logo (used in the nav brand and the favicon).
+// the little sailboat logo (used in the nav brand and the favicon).
 const BOAT_SHAPES =
   '<polygon points="14.5,4 14.5,18 6,18" fill="#0038a8"/>' +
   '<polygon points="16.5,8 16.5,18 24,18" fill="#ce1126"/>' +
   '<rect x="14.5" y="4" width="1.4" height="14" rx="0.5" fill="#13203b"/>' +
   '<path d="M4 20 H28 L24.5 26 Q16 28.5 7.5 26 Z" fill="#13203b"/>';
 
-// Swap the brand square for the boat and set the favicon (runs on every page).
+// swap the brand square for the boat and set the favicon (runs on every page).
 (function applyBranding() {
   document.querySelectorAll(".brand .dot").forEach(function (d) {
     d.outerHTML = '<svg class="brand-logo" viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">' + BOAT_SHAPES + '</svg>';
@@ -45,7 +45,7 @@ const BOAT_SHAPES =
   buildNavMenus();
 })();
 
-// Shows a spot/hotel detail popup on the current page (no page reload), with a
+// shows a spot/hotel detail popup on the current page (no page reload), with a
 // single button to actually book it. Used by the "You might also like" list so
 // the user can browse suggestions without bouncing between pages.
 function openItemModal(type, id) {
@@ -150,7 +150,7 @@ function openItemModal(type, id) {
   }
 }
 
-// Replaces the booking form with a confirmation (used by openItemModal).
+// replaces the booking form with a confirmation (used by openItemModal).
 function itemBookingConfirm(name, detail, bookingId) {
   const ref = "ELYU-" + String(bookingId || 0).padStart(6, "0");
   const box = document.querySelector("#modal .book-box");
@@ -179,7 +179,7 @@ async function loadUser() {
   return CURRENT_USER;
 }
 
-// Small inline SVG icons (no emojis, no glyph characters).
+// small inline SVG icons (no emojis, no glyph characters).
 const ICONS = {
   heart: function (filled) {
     return filled
@@ -192,12 +192,12 @@ const ICONS = {
   info: '<svg class="ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg>'
 };
 
-// Builds the right-hand side of the nav depending on login state.
+// builds the right-hand side of the nav depending on login state.
 function renderNavUser() {
   const box = document.getElementById("navAuth");
   if (!box) return;
   if (CURRENT_USER) {
-    // Account dropdown (like the one on Agoda) with profile / trips / log out.
+    // account dropdown (like the one on Agoda) with profile / trips / log out.
     box.innerHTML =
       '<a href="trips.html">My Trips</a>' +
       '<a href="trips.html?tab=saved" class="nav-icon" aria-label="Saved" title="Saved">' +
@@ -240,7 +240,7 @@ function renderNavUser() {
   }
 }
 
-// Keeps the little number badge on the Saved heart icon up to date.
+// keeps the little number badge on the Saved heart icon up to date.
 let SAVED_COUNT = 0;
 function renderSavedBadge() {
   const el = document.getElementById("savedCount");
@@ -259,26 +259,26 @@ async function refreshSavedCount() {
   SAVED_COUNT = (res.data.items || []).length;
   renderSavedBadge();
 }
-// Called when the user saves/unsaves so the badge updates without a reload.
+// called when the user saves/unsaves so the badge updates without a reload.
 function adjustSavedCount(delta) {
   SAVED_COUNT = Math.max(0, SAVED_COUNT + delta);
   renderSavedBadge();
 }
 
-// ---- Shared "save" (heart) system for spots and hotels ----
-// One source of truth so card hearts and modal hearts stay in sync.
+// ---- shared "save" (heart) system for spots and hotels ----
+// one source of truth so card hearts and modal hearts stay in sync.
 const SAVED = {}; // key "type:id" -> true
 function savedKey(type, id) { return type + ":" + id; }
 function isSaved(type, id) { return !!SAVED[savedKey(type, id)]; }
 
-// Load the user's saved items into SAVED (call on page boot).
+// load the user's saved items into SAVED (call on page boot).
 async function loadSaved() {
   if (!CURRENT_USER) return;
   const res = await api("api/saved.php");
   (res.data.items || []).forEach(function (it) { SAVED[savedKey(it.type, it.data.id)] = true; });
 }
 
-// Toggle a save. Returns the new state (true/false), or null if not logged in.
+// toggle a save. Returns the new state (true/false), or null if not logged in.
 async function toggleSaved(type, id) {
   if (!CURRENT_USER) { requireLoginRedirect(); return null; }
   const key = savedKey(type, id);
@@ -292,14 +292,14 @@ async function toggleSaved(type, id) {
   return true;
 }
 
-// Markup for a heart button (used on cards and inside modals).
+// markup for a heart button (used on cards and inside modals).
 function heartBtn(type, id, name) {
   const on = isSaved(type, id);
   return '<button class="badge-fav' + (on ? " saved" : "") + '" data-save-type="' + type +
     '" data-save-id="' + id + '" aria-label="Save ' + escapeHtml(name) + '">' + ICONS.heart(on) + '</button>';
 }
 
-// Wire every heart button inside a container so it toggles + updates itself.
+// wire every heart button inside a container so it toggles + updates itself.
 function wireHearts(container) {
   (container || document).querySelectorAll("[data-save-id]").forEach(function (btn) {
     if (btn.dataset.wired) return;
@@ -316,7 +316,7 @@ function wireHearts(container) {
   });
 }
 
-// Mobile nav toggle (the hamburger button).
+// mobile nav toggle (the hamburger button).
 function setupNavToggle() {
   const toggle = document.querySelector(".nav-toggle");
   const links = document.querySelector(".nav-links");
@@ -324,7 +324,7 @@ function setupNavToggle() {
   toggle.addEventListener("click", function () { links.classList.toggle("open"); });
 }
 
-// Small toast popup at the bottom of the screen.
+// small toast popup at the bottom of the screen.
 let toastTimer = null;
 function toast(message) {
   let el = document.getElementById("toast");
@@ -339,7 +339,7 @@ function toast(message) {
   toastTimer = setTimeout(function () { el.classList.remove("show"); }, 2500);
 }
 
-// Reusable confirmation dialog so important actions aren't done by accident.
+// reusable confirmation dialog so important actions aren't done by accident.
 // confirmAction({ title, message, confirmText, cancelText, danger, onConfirm })
 function confirmAction(opts) {
   let back = document.getElementById("confirmBack");
@@ -370,7 +370,7 @@ function confirmAction(opts) {
   });
 }
 
-// Search box with a live suggestions dropdown so users aren't left guessing.
+// search box with a live suggestions dropdown so users aren't left guessing.
 // opts: { getItems(), onPick(id), onFilter(query), chips: [..] }
 //   getItems  -> array of { id, name, town, type } to search through
 //   onPick    -> open the chosen item (e.g. its detail popup)
@@ -387,7 +387,7 @@ function setupSearch(opts) {
       '<span class="sr-meta">' + escapeHtml(it.town) + '</span></div>';
   }
 
-  // Wire up clicks (mousedown so it beats the input's blur) after rendering.
+  // wire up clicks (mousedown so it beats the input's blur) after rendering.
   function bind() {
     drop.querySelectorAll(".suggest-row").forEach(function (row) {
       row.addEventListener("mousedown", function (e) {
@@ -407,7 +407,7 @@ function setupSearch(opts) {
     });
   }
 
-  // Shown when the box is focused but empty - a few popular picks.
+  // shown when the box is focused but empty - a few popular picks.
   function renderPopular() {
     const items = opts.getItems();
     const pop = (opts.popular || []).map(function (name) {
@@ -451,7 +451,7 @@ function setupSearch(opts) {
   });
 }
 
-// Builds the hover menus under "Tourist Spots" (the 4 categories) and "Hotels"
+// builds the hover menus under "Tourist Spots" (the 4 categories) and "Hotels"
 // (hotel types). Runs once per page from app.js.
 function buildNavMenus() {
   const menus = {
@@ -482,7 +482,7 @@ function buildNavMenus() {
   });
 }
 
-// Fade-up reveal using IntersectionObserver (works no matter how the page
+// fade-up reveal using IntersectionObserver (works no matter how the page
 // scrolls). Elements need the .reveal class; we add .in when they show.
 function revealOnScroll(selector) {
   const els = document.querySelectorAll(selector);
@@ -508,7 +508,7 @@ function revealOnScroll(selector) {
 
 // ---- little display helpers ----
 
-// Placeholder background color for a category (used when there's no image).
+// placeholder background color for a category (used when there's no image).
 const CAT_COLOR = {
   beaches: "var(--c-beaches)",
   mountains: "var(--c-mountains)",
@@ -519,7 +519,7 @@ function phStyle(catId) {
   return "background:" + (CAT_COLOR[catId] || "var(--blue)") + ";";
 }
 
-// Fake but stable rating + review count so cards look like a real booking site.
+// fake but stable rating + review count so cards look like a real booking site.
 function hashy(str) {
   let h = 0;
   for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
@@ -532,7 +532,7 @@ function reviewsFor(name) {
   return 45 + (hashy(name + "r") % 2400);
 }
 
-// Turn a price string like "200 - 400" into something nice, or FREE.
+// turn a price string like "200 - 400" into something nice, or FREE.
 function priceText(price) {
   if (!price || price === "N/A") return null;
   if (/free/i.test(price)) return "FREE";
@@ -548,7 +548,7 @@ function escapeHtml(str) {
     .replace(/"/g, "&quot;");
 }
 
-// Turns "2026-07-04" into "July 04, 2026 (Saturday)" so dates read nicely.
+// turns "2026-07-04" into "July 04, 2026 (Saturday)" so dates read nicely.
 function formatDate(iso) {
   if (!iso) return "";
   const p = String(iso).split("-");
@@ -562,7 +562,7 @@ function formatDate(iso) {
   return months[m - 1] + " " + String(d).padStart(2, "0") + ", " + y + " (" + days[dt.getDay()] + ")";
 }
 
-// Format a distance for the suggestion list ("Same area" when it's basically 0).
+// format a distance for the suggestion list ("Same area" when it's basically 0).
 function distText(km) {
   if (km <= 0.5) return "Same area";
   return "~" + km + " km away";

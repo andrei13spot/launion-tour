@@ -4,7 +4,7 @@ $userId = require_login();
 
 $method = $_SERVER["REQUEST_METHOD"];
 
-// READ - list the user's saved spots and hotels, with full details.
+// read - list the user's saved spots and hotels, with full details.
 if ($method === "GET") {
     $stmt = $pdo->prepare("SELECT item_type, item_id FROM saved_items WHERE user_id = ? ORDER BY created_at DESC");
     $stmt->execute([$userId]);
@@ -40,7 +40,7 @@ if ($method === "GET") {
     json_out(["items" => $items]);
 }
 
-// CREATE - save an item.
+// create - save an item.
 if ($method === "POST") {
     $data = body();
     $type = $data["itemType"] ?? "";
@@ -53,7 +53,7 @@ if ($method === "POST") {
     json_out(["ok" => true]);
 }
 
-// DELETE - remove a saved item.
+// delete - remove a saved item.
 if ($method === "DELETE") {
     $data = body();
     $type = $data["itemType"] ?? "";
