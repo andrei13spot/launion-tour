@@ -1,5 +1,5 @@
-// One-off generator: produces setup.sql from the tourism data.
-// Run with: node sql/_gen.js > sql/setup.sql   (kept in repo for transparency)
+// one-off generator: produces setup.sql from the tourism data.
+// run with: node sql/_gen.js > sql/setup.sql   (kept in repo for transparency)
 const fs = require("fs");
 
 const TOWNS = [
@@ -53,22 +53,21 @@ const SPOTS = [
   ["culture","Pindangan Ruins","San Fernando City","Historic Site","Moss-covered stone walls that are the remnants of an 18th-century Spanish church destroyed by a massive earthquake. The tranquil ruins are now a captivating historical site and a popular backdrop for photography.","San Vicente, San Fernando City, 2500 La Union, Philippines","25","6:00 AM - 5:00 PM","N/A","N/A",""]
 ];
 
-// Real La Union hotels (rates are sample figures). name, town, type, price, rating, about, amenities, image
+// real La Union hotels (rates are sample figures). name, town, type, price, rating, about, amenities, image
 const HOTELS = [
   ["Puerto de San Juan Beach Resort","San Juan","Beach Resort",4500,4.2,"La Union's tall beachfront condotel in Urbiztondo, with sea-view rooms, a pool, and direct access to the surf.","Pool, Beachfront, Restaurant, Free WiFi, Parking","hotel/puerto.jpeg"],
   ["Awesome Hotel","San Juan","Beach Resort",6000,4.5,"A modern luxury beach resort right on the Urbiztondo surf break, with a pool, rooftop, and full-service restaurant.","Pool, Beachfront, Restaurant, Bar, Free WiFi","hotel/awesome.png"],
   ["The Salt Boutique Hotel by Wyns","San Juan","Boutique Hotel",5500,4.6,"An elegant beachfront boutique hotel in Urbiztondo with a sea-view pool, private beach area, and chic modern rooms.","Pool, Beachfront, Sea View, Free WiFi, Breakfast","hotel/salt.webp"],
   ["Ciabel Hotel and Fitness Center","San Juan","Hotel",3200,4.1,"A comfortable San Juan hotel a short walk from the beach, with an outdoor pool, fitness center, and Filipino restaurant.","Pool, Fitness Center, Restaurant, Free WiFi, Parking","hotel/ciabel.jpg"],
   ["Patio by Balai Norte","San Juan","Hotel",3500,4.3,"A stylish, family-friendly stay in San Juan with a restaurant, bar, fitness room, and a shuttle to its own private beach.","Restaurant, Bar, Private Beach, Free WiFi, Parking","hotel/patio.jpg"],
-  ["Costa Villa Beach Resort","San Juan","Beach Resort",2800,4.0,"A relaxed beachfront resort in San Juan with cozy rooms, a pool, and an easy walk to the surf and cafes.","Pool, Beachfront, Restaurant, Free WiFi","hotel/villa.webp"],
+  ["Villa d' El-Lita Hotel, Resort & Restaurant","Sudipen","Resort",3800,4.0,"A rustic riverside retreat in Sudipen bordering Ilocos Sur, with comfortable rooms, an infinity pool, conference halls, and panoramic views of the Amburayan River.","Free WiFi, Infinity Pool, Restaurant, Bar, Parking","hotel/villa.webp"],
   ["Cococay Resort Hotel","Bauang","Resort",2200,3.8,"A laid-back beach resort in Bauang with direct beach access, a restaurant, and free parking, away from the surf crowd.","Beachfront, Restaurant, Free WiFi, Parking","hotel/cococay.jpg"],
-  ["Hotel Ariana","San Fernando City","Hotel",2400,4.2,"A comfortable mid-range city hotel near the heart of San Fernando, good for business and family stays.","Free WiFi, Restaurant, Function Hall, Parking","hotel/hotelariana.jpg"],
+  ["Hotel Ariana","Bauang","Hotel",2400,4.2,"A comfortable mid-range hotel in Bauang near business districts and top destinations, ideal for work, leisure, and family stays.","Free WiFi, Restaurant, Function Hall, Parking","hotel/hotelariana.jpg"],
   ["J&V Hotel and Resort","San Fernando City","Resort",2600,4.0,"A quiet San Fernando resort with an outdoor pool, fitness center, and spacious air-conditioned rooms.","Pool, Fitness Center, Spa, Free WiFi, Parking","hotel/jv.jpg"],
-  ["Travelite Hotel","San Juan","Inn",1500,3.9,"A budget-friendly inn in San Juan, a short ride from the beach, popular with surfers and backpackers.","Free WiFi, Breakfast, Parking","hotel/travellite.webp"],
-  ["Hoyrl Hotel","San Juan","Hotel",1800,3.9,"A simple, no-frills hotel in San Juan with clean rooms close to the surf town's cafes and beach.","Free WiFi, Parking, Restaurant","hotel/hoyrl.jpg"]
+  ["Travelite Hotel","San Fernando City","Inn",1500,3.9,"A budget-friendly inn in the heart of San Fernando City, an easy gateway to La Union's capital, popular with surfers and backpackers.","Free WiFi, Breakfast, Parking","hotel/travellite.webp"]
 ];
 
-// Photo for each spot (uploaded by the group). Keyed by the exact spot name.
+// photo for each spot (uploaded by the group). Keyed by the exact spot name.
 const IMAGES = {
   "Urbiztondo Beach": "img/beach/urbiztondo.jpeg",
   "Pebble Beach": "img/beach/pebble-beach.jpg",
@@ -206,7 +205,7 @@ HOTELS.forEach(h => {
 
 fs.writeFileSync(__dirname + "/setup.sql", out);
 
-// Also write an apply-script to update an existing database (spot photos +
+// also write an apply-script to update an existing database (spot photos +
 // the real hotels) without wiping users/bookings.
 let upd = "USE launion_tour;\n";
 SPOTS.forEach(function (s) {
