@@ -119,7 +119,7 @@ plan a tour or reserve a hotel, then open **My Trips** to see and manage them.
 ## Notes
 
 - Tourist spots and hotels are real La Union places. **Hotel nightly rates are sample figures.**
-- The home page hero plays `video/launion-hero.webm` if present; otherwise it shows a colored background. The video is a large local asset and is **not** committed to the repo (kept out by `.gitignore`), so add your own clip to the `video/` folder. Keep it small (ideally under ~10 MB) for fast loading.
+- The home page hero plays `video/launion-hero.webm`, which is included in the repo, so it's the same for everyone on clone. If the file is ever missing, the hero falls back to a colored background.
 - Full project documentation (objectives, diagrams, data dictionary, testing) is in [`DOCUMENTATION.md`](DOCUMENTATION.md).
 - A presentation/defense study guide (how the layers connect, plus a syntax cheatsheet) is in [`REVIEWER.md`](REVIEWER.md).
 

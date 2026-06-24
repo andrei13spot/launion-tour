@@ -4,7 +4,4 @@ api/config.local.php
 .DS_Store
 Thumbs.db
 
-# hero video is a large local asset (too big for GitHub's 100MB file limit)
-video/*.mp4
-video/*.webm
 sql/update-images.sql

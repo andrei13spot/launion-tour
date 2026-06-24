@@ -32,7 +32,6 @@ function hotelCard(h) {
 function renderHotels() {
   const grid = document.getElementById("hotelGrid");
   grid.innerHTML = HOTELS.map(hotelCard).join("");
-  document.getElementById("hotelCount").textContent = String(HOTELS.length).padStart(2, "0");
   grid.querySelectorAll(".card").forEach(function (card) {
     card.addEventListener("click", function (e) {
       if (e.target.closest("[data-save-id]")) return;
@@ -100,7 +99,7 @@ function openHotelModal(hotelId) {
           '<div class="field"><label for="checkout">Check-out</label><input type="date" id="checkout" value="' + fmt(tomorrow) + '" min="' + fmt(tomorrow) + '" /></div>' +
         '</div>' +
         '<div class="field"><label for="guests">Guests</label><input type="number" id="guests" value="2" min="1" max="10" /></div>' +
-        '<div class="book-total"><span>Total <span style="color:var(--muted);font-weight:500">(₱' + h.price.toLocaleString() + '/night)</span></span><span><b id="hTotal"></b></span></div>' +
+        '<div class="book-total"><span>Total <span style="color:var(--muted);font-weight:500">(₱' + h.price.toLocaleString() + '/night, +₱500/extra guest)</span></span><span><b id="hTotal"></b></span></div>' +
         '<button class="btn btn-blue btn-block" id="reserveBtn">Reserve now</button>' +
       '</div>' +
       '<div id="suggestArea"></div>' +
@@ -113,11 +112,18 @@ function openHotelModal(hotelId) {
 
   const checkin = document.getElementById("checkin");
   const checkout = document.getElementById("checkout");
+  const guestsEl = document.getElementById("guests");
   const totalEl = document.getElementById("hTotal");
   // show the running total so the user sees the price before confirming.
+  // base rate covers 2 guests; each extra guest adds ₱500 per night.
   function refreshTotal() {
     const n = Math.round((new Date(checkout.value) - new Date(checkin.value)) / 86400000);
-    totalEl.textContent = n >= 1 ? "₱" + (n * h.price).toLocaleString() + " · " + n + " night" + (n > 1 ? "s" : "") : "Pick valid dates";
+    const guests = parseInt(guestsEl.value, 10) || 1;
+    const perNight = h.price + Math.max(0, guests - 2) * 500;
+    totalEl.textContent = n >= 1
+      ? "₱" + (n * perNight).toLocaleString() + " · " + n + " night" + (n > 1 ? "s" : "") +
+        (guests > 2 ? " · " + (guests - 2) + " extra guest" + (guests - 2 > 1 ? "s" : "") : "")
+      : "Pick valid dates";
   }
   checkin.addEventListener("change", function () {
     const next = new Date(this.value);
@@ -128,6 +134,7 @@ function openHotelModal(hotelId) {
     refreshTotal();
   });
   checkout.addEventListener("change", refreshTotal);
+  guestsEl.addEventListener("input", refreshTotal);
   refreshTotal();
 }
 

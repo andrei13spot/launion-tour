@@ -35,7 +35,10 @@ if ($stmt->fetch()) {
     json_out(["error" => "You already have a reservation at this hotel for those dates."], 409);
 }
 
-$total = $nights * (int)$hotel["price"];
+// base nightly rate covers up to 2 guests; each extra guest adds a fee per night.
+$extraGuests = max(0, $guests - 2);
+$perNight = (int)$hotel["price"] + $extraGuests * 500;
+$total = $nights * $perNight;
 
 $stmt = $pdo->prepare(
     "INSERT INTO bookings (user_id, kind, item_id, item_name, town, checkin, checkout, guests, total, status)

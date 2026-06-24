@@ -44,6 +44,8 @@ function travellerTips(booking) {
 const ICON_HOTEL = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18V9a1 1 0 0 1 1-1h11a4 4 0 0 1 4 4v6"/><path d="M3 14h18"/><path d="M3 18v2M21 18v2"/></svg>';
 const ICON_TOUR = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-5.5-6-10a6 6 0 0 1 12 0c0 4.5-6 10-6 10z"/><circle cx="12" cy="11" r="2"/></svg>';
 
+let bookingFilter = { status: "all", type: "all" };
+
 function bookingRow(b) {
   const isHotel = b.kind === "hotel";
   const icon = isHotel ? ICON_HOTEL : ICON_TOUR;
@@ -61,10 +63,8 @@ function bookingRow(b) {
     side = '<div class="price" style="color:var(--blue)">Tour</div>';
   }
   const statusClass = b.status === "cancelled" ? "status-cancelled" : "status-confirmed";
-  const cancelBtn = b.status === "cancelled"
-    ? '<button class="link-btn" data-remove="' + b.id + '">Remove</button>'
-    : '<button class="link-btn" data-cancel="' + b.id + '">Cancel</button>';
 
+  // the whole card opens the detail modal; cancel/remove lives inside that modal.
   return '<div class="booking-card" data-open="' + b.id + '" style="cursor:pointer">' +
     visual +
     '<div class="booking-info">' +
@@ -73,8 +73,16 @@ function bookingRow(b) {
       '<span class="status-pill ' + statusClass + '">' + b.status + '</span>' +
       '<span style="color:var(--blue);font-size:.76rem;font-weight:700;margin-left:8px">View details &rarr;</span>' +
     '</div>' +
-    '<div class="booking-side">' + side + cancelBtn + '</div>' +
+    '<div class="booking-side">' + side + '</div>' +
   '</div>';
+}
+
+// one row of filter chips (status or type) for the bookings list.
+function filterChips(group, opts) {
+  return '<div class="trip-fgroup">' + opts.map(function (o) {
+    return '<button class="trip-chip' + (bookingFilter[group] === o[0] ? " active" : "") +
+      '" data-fgroup="' + group + '" data-fval="' + o[0] + '">' + o[1] + '</button>';
+  }).join("") + '</div>';
 }
 
 function renderBookings(bookings) {
@@ -84,47 +92,41 @@ function renderBookings(bookings) {
       '<a href="index.html" style="color:var(--blue);font-weight:700">Start planning a trip</a></div>';
     return;
   }
-  panel.innerHTML = bookings.map(bookingRow).join("");
-  // open the detail modal when a card is clicked
-  panel.querySelectorAll("[data-open]").forEach(function (card) {
-    card.addEventListener("click", function (e) {
-      if (e.target.dataset.cancel || e.target.dataset.remove) return; // let the buttons handle it
+  panel.innerHTML =
+    '<div class="trip-filters">' +
+      filterChips("status", [["all", "All"], ["confirmed", "Confirmed"], ["cancelled", "Cancelled"]]) +
+      filterChips("type", [["all", "All"], ["hotel", "Hotels"], ["tour", "Tourist spots"]]) +
+    '</div>' +
+    '<div id="bookingList"></div>';
+  panel.querySelectorAll("[data-fgroup]").forEach(function (chip) {
+    chip.addEventListener("click", function () {
+      const group = chip.dataset.fgroup;
+      bookingFilter[group] = chip.dataset.fval;
+      panel.querySelectorAll('[data-fgroup="' + group + '"]').forEach(function (c) {
+        c.classList.toggle("active", c.dataset.fval === chip.dataset.fval);
+      });
+      applyBookingFilters();
+    });
+  });
+  applyBookingFilters();
+}
+
+// filters BOOKINGS by the chosen status + type and renders the rows.
+function applyBookingFilters() {
+  const listEl = document.getElementById("bookingList");
+  if (!listEl) return;
+  const list = BOOKINGS.filter(function (b) {
+    return (bookingFilter.status === "all" || b.status === bookingFilter.status) &&
+           (bookingFilter.type === "all" || b.kind === bookingFilter.type);
+  });
+  if (!list.length) {
+    listEl.innerHTML = '<div class="empty">No bookings match this filter.</div>';
+    return;
+  }
+  listEl.innerHTML = list.map(bookingRow).join("");
+  listEl.querySelectorAll("[data-open]").forEach(function (card) {
+    card.addEventListener("click", function () {
       openBookingModal(parseInt(card.dataset.open, 10));
-    });
-  });
-  panel.querySelectorAll("[data-cancel]").forEach(function (btn) {
-    btn.addEventListener("click", function (e) {
-      e.stopPropagation();
-      const id = parseInt(btn.dataset.cancel, 10);
-      const b = BOOKINGS.find(function (x) { return x.id === id; });
-      confirmAction({
-        title: "Cancel this booking?",
-        message: b ? b.item_name : "",
-        confirmText: "Cancel booking",
-        cancelText: "Keep booking",
-        onConfirm: async function () {
-          await api("api/cancel-booking.php", "POST", { bookingId: id });
-          toast("Booking cancelled.");
-          load();
-        }
-      });
-    });
-  });
-  panel.querySelectorAll("[data-remove]").forEach(function (btn) {
-    btn.addEventListener("click", function (e) {
-      e.stopPropagation();
-      const id = parseInt(btn.dataset.remove, 10);
-      confirmAction({
-        title: "Remove this booking?",
-        message: "This removes it from your list.",
-        confirmText: "Remove",
-        cancelText: "Cancel",
-        onConfirm: async function () {
-          await api("api/delete-booking.php", "POST", { bookingId: id });
-          toast("Booking removed.");
-          load();
-        }
-      });
     });
   });
 }
@@ -186,10 +188,44 @@ function openBookingModal(bookingId) {
       (isHotel
         ? '<a href="index.html" class="btn btn-red btn-block" style="margin-top:22px">Browse tourist spots</a>'
         : '<a href="hotels.html" class="btn btn-blue btn-block" style="margin-top:22px">Browse hotels</a>') +
+      '<button class="link-btn" id="bookingAction" style="display:block;margin:14px auto 0">' +
+        (b.status === "cancelled" ? "Remove from my trips" : "Cancel this booking") +
+      '</button>' +
     '</div>';
 
   openModal();
   document.getElementById("mClose").addEventListener("click", closeModal);
+
+  // cancel (if confirmed) or remove (if already cancelled) right from the detail view.
+  document.getElementById("bookingAction").addEventListener("click", function () {
+    if (b.status === "cancelled") {
+      confirmAction({
+        title: "Remove this booking?",
+        message: "This removes it from your list.",
+        confirmText: "Remove",
+        cancelText: "Cancel",
+        onConfirm: async function () {
+          await api("api/delete-booking.php", "POST", { bookingId: b.id });
+          toast("Booking removed.");
+          closeModal();
+          load();
+        }
+      });
+    } else {
+      confirmAction({
+        title: "Cancel this booking?",
+        message: b.item_name,
+        confirmText: "Cancel booking",
+        cancelText: "Keep booking",
+        onConfirm: async function () {
+          await api("api/cancel-booking.php", "POST", { bookingId: b.id });
+          toast("Booking cancelled.");
+          closeModal();
+          load();
+        }
+      });
+    }
+  });
 }
 
 function openModal() {
@@ -218,7 +254,8 @@ function savedCard(item) {
   return '<article class="card" style="min-height:300px;opacity:1;transform:none;cursor:pointer" ' +
       'data-saved-type="' + item.type + '" data-saved-id="' + d.id + '" tabindex="0" role="button" aria-label="View ' + escapeHtml(d.name) + '">' +
     '<div class="card-visual">' + visual +
-      '<span class="card-type">' + escapeHtml(isHotel ? "Hotel" : d.type) + '</span></div>' +
+      '<span class="card-type">' + escapeHtml(isHotel ? "Hotel" : d.type) + '</span>' +
+      heartBtn(item.type, d.id, d.name) + '</div>' +
     '<div class="card-body">' +
       '<h4>' + escapeHtml(d.name) + '</h4>' +
       '<div class="card-town">' + escapeHtml(d.town) + ', La Union</div>' +
@@ -238,11 +275,25 @@ function renderSaved(items) {
   panel.innerHTML = '<div class="grid">' + items.map(savedCard).join("") + '</div>';
   // open the item's details right here instead of navigating away.
   panel.querySelectorAll("[data-saved-id]").forEach(function (card) {
-    card.addEventListener("click", function () {
+    card.addEventListener("click", function (e) {
+      if (e.target.closest("[data-save-id]")) return; // heart handled separately
       openSavedModal(card.dataset.savedType, card.dataset.savedId);
     });
     card.addEventListener("keydown", function (e) {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openSavedModal(card.dataset.savedType, card.dataset.savedId); }
+    });
+  });
+  // the heart on each card removes it from saved, then refreshes the list.
+  panel.querySelectorAll("[data-save-id]").forEach(function (btn) {
+    btn.addEventListener("click", async function (e) {
+      e.stopPropagation();
+      e.preventDefault();
+      const type = btn.dataset.saveType, id = btn.dataset.saveId;
+      await api("api/saved.php", "DELETE", { itemType: type, itemId: id });
+      delete SAVED[savedKey(type, id)];
+      adjustSavedCount(-1);
+      toast("Removed from saved.");
+      load();
     });
   });
 }
@@ -275,7 +326,7 @@ function openSavedModal(type, id) {
   }
 
   document.getElementById("modal").innerHTML =
-    '<div class="modal-visual">' + visual +
+    '<div class="modal-visual">' + visual + heartBtn(type, item.id, item.name) +
       '<button class="modal-close" id="mClose" aria-label="Close">&times;</button></div>' +
     '<div class="modal-inner">' +
       '<span class="modal-type">' + (isHotel ? "Saved Hotel" : "Saved Spot") + '</span>' +
@@ -286,25 +337,23 @@ function openSavedModal(type, id) {
       (isHotel
         ? '<a href="hotels.html?hotel=' + item.id + '" class="btn btn-blue btn-block" style="margin-top:20px">Reserve now</a>'
         : '<a href="index.html?spot=' + item.id + '" class="btn btn-red btn-block" style="margin-top:20px">Book tour</a>') +
-      '<button class="link-btn" id="removeSaved" style="display:block;margin:14px auto 0">Remove from saved</button>' +
     '</div>';
 
   openModal();
   document.getElementById("mClose").addEventListener("click", closeModal);
-  document.getElementById("removeSaved").addEventListener("click", function () {
-    confirmAction({
-      title: "Remove from saved?",
-      message: item.name,
-      confirmText: "Remove",
-      cancelText: "Cancel",
-      onConfirm: async function () {
-        await api("api/saved.php", "DELETE", { itemType: type, itemId: item.id });
-        toast("Removed from saved.");
-        closeModal();
-        load();
-      }
+  // the heart toggles saved (same as the homepage); refresh the list when changed.
+  const heart = document.querySelector("#modal [data-save-id]");
+  if (heart) {
+    heart.addEventListener("click", async function (e) {
+      e.stopPropagation();
+      e.preventDefault();
+      const on = await toggleSaved(type, item.id);
+      if (on === null) return;
+      heart.classList.toggle("saved", on);
+      heart.innerHTML = ICONS.heart(on);
+      load(); // refresh the saved list behind the modal
     });
-  });
+  }
 }
 
 // tab switching
@@ -341,6 +390,7 @@ window.addEventListener("load", async function () {
     return;
   }
   renderNavUser();
+  await loadSaved(); // so the heart on each saved card shows as filled
   document.getElementById("welcomeLine").innerHTML =
     "Welcome back, <span class=\"welcome-name\">" + escapeHtml(CURRENT_USER.name) +
     "</span>! Here are your saved spots and bookings.";

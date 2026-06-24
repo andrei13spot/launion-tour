@@ -4,6 +4,17 @@
 
 let DATA = null;          // { categories, spots }
 
+// the search box lives inside the first category's photo banner (beaches & falls).
+const SEARCH_BOX_HTML =
+  '<div class="search-box hero-search">' +
+    '<div class="searchbar">' +
+      '<svg class="search-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>' +
+      '<input type="text" id="searchInput" placeholder="Search by name, town, or type" aria-label="Search tourist spots" autocomplete="off" />' +
+      '<button type="button" class="search-btn" id="searchBtn">Search</button>' +
+    '</div>' +
+    '<div class="search-suggest" id="searchSuggest"></div>' +
+  '</div>';
+
 function spotById(id) {
   // ids from the database are numbers, but data-id attributes are strings,
   // so compare them as strings to be safe.
@@ -39,16 +50,18 @@ function cardHTML(s) {
 function renderCatalog() {
   const root = document.getElementById("catalog");
   let html = "";
-  DATA.categories.forEach(function (cat) {
+  DATA.categories.forEach(function (cat, idx) {
     const list = DATA.spots.filter(function (s) { return s.category === cat.id; });
     // each category is a full-width section with its own big centered header
     // band (a distinct background per category) so the page reads in clear,
-    // apple-style chapters as you scroll.
-    html += '<section class="cat-block cat-' + cat.id + '" id="' + cat.id + '">' +
+    // apple-style chapters as you scroll. the search box sits inside the first
+    // banner (beaches & falls).
+    html += '<section class="cat-block cat-' + cat.id + (idx === 0 ? " has-search" : "") + '" id="' + cat.id + '">' +
       '<div class="cat-hero">' +
+        (idx === 0 ? SEARCH_BOX_HTML : "") +
         '<div class="l-tag">' + escapeHtml(cat.tag) + '</div>' +
         '<h3>' + escapeHtml(cat.label) + '</h3>' +
-        '<p class="cat-sub">' + list.length + ' places to explore</p>' +
+        '<p class="cat-sub">Places to explore</p>' +
       '</div>' +
       '<div class="wrap"><div class="grid">' + list.map(cardHTML).join("") + '</div></div>' +
     '</section>';
@@ -85,7 +98,10 @@ function filterSpots(query) {
       card.style.display = hit ? "" : "none";
       if (hit) { card.classList.add("in"); blockHas = true; } // .in keeps it visible past the reveal animation
     });
-    block.style.display = blockHas ? "" : "none";
+    // the first banner holds the search box, so keep it on screen even when
+    // nothing in it matches (otherwise the search field would vanish mid-type).
+    const hasSearch = !!block.querySelector("#searchInput");
+    block.style.display = (blockHas || hasSearch) ? "" : "none";
     // make sure the section's header band is visible too (it may not have
     // scrolled into view yet, which would leave it faded out).
     if (blockHas) {
