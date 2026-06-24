@@ -78,7 +78,7 @@ function openItemModal(type, id) {
           '<div class="field"><label for="iCo">Check-out</label><input type="date" id="iCo" value="' + fmt(tomorrow) + '" min="' + fmt(tomorrow) + '" /></div>' +
         '</div>' +
         '<div class="field"><label for="iGs">Guests</label><input type="number" id="iGs" value="2" min="1" max="10" /></div>' +
-        '<div class="book-total"><span>Total</span><span><b id="iTotal"></b></span></div>' +
+        '<div class="book-total"><span>Total <span style="color:var(--muted);font-weight:500">(+₱500/extra guest)</span></span><span><b id="iTotal"></b></span></div>' +
         '<button class="btn btn-blue btn-block" id="iBook">Reserve now</button>' +
       '</div>';
   } else {
@@ -117,10 +117,17 @@ function openItemModal(type, id) {
   if (isHotel) {
     const ci = document.getElementById("iCi"), co = document.getElementById("iCo");
     const total = document.getElementById("iTotal");
+    const gs = document.getElementById("iGs");
     function nights() { return Math.round((new Date(co.value) - new Date(ci.value)) / 86400000); }
+    // base rate covers 2 guests; each extra guest adds ₱500 per night.
     function refreshTotal() {
       const n = nights();
-      total.textContent = n >= 1 ? "₱" + (n * item.price).toLocaleString() + " · " + n + " night" + (n > 1 ? "s" : "") : "Pick valid dates";
+      const guests = parseInt(gs.value, 10) || 1;
+      const perNight = item.price + Math.max(0, guests - 2) * 500;
+      total.textContent = n >= 1
+        ? "₱" + (n * perNight).toLocaleString() + " · " + n + " night" + (n > 1 ? "s" : "") +
+          (guests > 2 ? " · " + (guests - 2) + " extra guest" + (guests - 2 > 1 ? "s" : "") : "")
+        : "Pick valid dates";
     }
     ci.addEventListener("change", function () {
       const next = new Date(ci.value); next.setDate(next.getDate() + 1);
@@ -129,6 +136,7 @@ function openItemModal(type, id) {
       refreshTotal();
     });
     co.addEventListener("change", refreshTotal);
+    gs.addEventListener("input", refreshTotal);
     refreshTotal();
     document.getElementById("iBook").addEventListener("click", async function () {
       if (!requireLoginRedirect()) return;
