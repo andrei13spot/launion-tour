@@ -236,7 +236,101 @@ Sudipen spots, and so on. This is why each hotel's **town** must be correct.
 
 ---
 
-## 7. Things to be ready to explain (defense prep)
+## 7. Database normalization (UNF to 3NF) — how the schema was designed
+
+We did not start with six tables. We started with one flat record of everything a
+trip involves, then **normalized** it step by step to remove repeated data and
+update problems. This is the process to walk through if the panel asks how you
+designed the database.
+
+**Definitions to memorize:**
+- **1NF** — every field holds one value, no repeating groups, each row has a key.
+- **2NF** — 1NF, and every non-key column depends on the **whole** key, not just part of it (no partial dependency).
+- **3NF** — 2NF, and no non-key column depends on **another non-key column** (no transitive dependency).
+
+### Step 0 — UNF (one unnormalized sheet)
+
+Picture recording each user's trips on a single sheet: one row per user, with
+repeating groups (a user has many bookings and many saved places) and a
+multi-valued field (a hotel's amenities).
+
+```
+TRIP_SHEET ( user_id, name, email,
+  bookings { kind, place_name, place_town, town_lat, town_lng, amenities,
+             checkin, checkout, guests, total, status },
+  saved    { place_type, place_name } )
+```
+
+Problem: the repeating groups and the multi-valued `amenities` cannot sit in one
+clean relational table.
+
+### Step 1 — 1NF (atomic values, no repeating groups)
+
+Give each repeating group its own rows, make every cell a single value, and pick a key.
+
+```
+BOOKING_1NF ( booking_id PK, user_id, name, email,
+              place_id, place_name, place_town, town_lat, town_lng, amenities,
+              checkin, checkout, guests, total, status )
+SAVED_1NF   ( user_id, place_type, place_id )      -- key = all three columns
+```
+
+Flat now, but each booking row repeats the user's name and email, and repeats the
+town and its coordinates for every place.
+
+### Step 2 — 2NF (remove partial dependencies)
+
+A reservation line is identified by who booked what, the pair `(user_id, place_id)`.
+Some columns depend on only **part** of that key:
+
+- `name`, `email` depend on `user_id` alone, so they move to **USERS**.
+- `place_name`, `place_town`, `town_lat`, `town_lng`, `amenities` depend on `place_id` alone, so they move to **SPOTS** and **HOTELS**.
+- `checkin`, `checkout`, `guests`, `total`, `status` depend on the whole reservation, so they stay in **BOOKINGS** (with a surrogate `booking_id`, since a user can book the same place again on other dates).
+
+```
+USERS    ( id PK, name, email, password )
+HOTELS   ( id PK, place_name, town, town_lat, town_lng, type, price, rating, amenities )
+BOOKINGS ( id PK, user_id FK, item_id, checkin, checkout, guests, total, status )
+SAVED_ITEMS ( id PK, user_id FK, item_type, item_id )
+```
+
+Each user is now stored once.
+
+### Step 3 — 3NF (remove transitive dependencies)
+
+Inside HOTELS (and SPOTS) a non-key column still depends on another non-key column:
+`town_lat` and `town_lng` depend on the **town**, not on the place id. That chain,
+`place_id` to `town` to `(lat, lng)`, is a transitive dependency.
+
+Fix: pull the town and its coordinates into their own table, referenced by a foreign key.
+
+```
+TOWNS  ( id PK, name, lat, lng )
+SPOTS  ( id PK, name, town_id FK, category, type, about, location, price, hours, phone, email, image )
+HOTELS ( id PK, name, town_id FK, type, price, rating, about, amenities, image )
+```
+
+Each town and its coordinates are stored once. Updating a coordinate is a single
+change, and the nearby-suggestion feature reads those coordinates from one place.
+
+### Final design in 3NF — the six tables
+
+`towns`, `users`, `spots`, `hotels`, `saved_items`, `bookings`. Every fact lives
+once, and the foreign keys hold it together (`spots.town_id`, `hotels.town_id` to
+`towns.id`; `saved_items.user_id`, `bookings.user_id` to `users.id`).
+
+### Two honest notes, in case the panel pushes
+
+- **amenities** is kept as one comma-separated text field in `hotels`, used only for
+  display. A stricter design would split it into an `amenities` table plus a
+  hotel-amenities link table. We judged that unnecessary for a read-only label and
+  chose the simpler field. Say this plainly if asked.
+- **bookings** keep `item_name` and `town` as a snapshot taken at booking time, on
+  purpose, so a past booking still reads correctly even if the place is edited later.
+
+---
+
+## 8. Things to be ready to explain (defense prep)
 
 - **Why a database (not just files)?** Data is structured, queryable, and
   normalized — town info is stored once and reused by spots and hotels via
@@ -257,7 +351,7 @@ Sudipen spots, and so on. This is why each hotel's **town** must be correct.
 
 ---
 
-## 8. Real-world extensions (what a production system would add)
+## 9. Real-world extensions (what a production system would add)
 
 Our app covers the full booking lifecycle for the project's scope. A live
 commercial site would go further with:
@@ -279,7 +373,7 @@ class prototype and production software.
 
 ---
 
-## 9. One-line summary to memorize
+## 10. One-line summary to memorize
 
 > **Browser shows it → JavaScript fetches it → PHP prepares it → MySQL stores it,
 > and JSON carries the message back and forth.**
